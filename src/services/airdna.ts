@@ -1,10 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Create a single supabase client for interacting with your database
-const supabase = createClient(
-  'https://xyzcompany.supabase.co',  // This will be replaced automatically by Lovable
-  'public-anon-key'  // This will be replaced automatically by Lovable
-);
+import { supabase } from "@/integrations/supabase/client";
 
 const AIRDNA_BASE_URL = 'https://api.airdna.co/v1';
 
