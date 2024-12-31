@@ -23,6 +23,10 @@ export const searchMarkets = async ({ term }: MarketSearchParams) => {
       throw new Error('Failed to fetch API key');
     }
 
+    if (!secretData) {
+      throw new Error('API key not found');
+    }
+
     const response = await fetch(
       `${AIRDNA_BASE_URL}/market/search?access_token=${secretData.value}&term=${encodeURIComponent(term)}`
     );
@@ -51,6 +55,10 @@ export const getMarketMetrics = async ({ marketId }: MarketMetricsParams) => {
     if (secretError) {
       console.error('Error fetching API key:', secretError);
       throw new Error('Failed to fetch API key');
+    }
+
+    if (!secretData) {
+      throw new Error('API key not found');
     }
 
     const response = await fetch(
