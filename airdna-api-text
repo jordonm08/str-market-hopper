@@ -1,0 +1,2938 @@
+AirDNA Enterprise API (2.0.0)
+Download OpenAPI specification:Download
+
+E-mail: api@airdna.co
+License: Apache 2.0
+Introduction
+Welcome to the All-New AirDNA API!
+
+The AirDNA API provides direct access to our industry-leading data & analytics. Whether you’re looking to discover a property’s earning potential, compare markets side by side, or run comps to inform your revenue management strategy, you can do so with the endpoints found here.
+
+The AirDNA API is divided into four packages, each with their own value and use cases:
+
+Market Data: Unlock market-level data to compare entire different locations side by side, and future data to how properties in that market are priced for upcoming days.
+Property Valuations & Comps: Conduct property-level research with advanced filtering and comp analysis to inform your acquisitions, benchmarking, pricing, and more.
+Rentalizer Lead Gen: Determine the earning potential, occupancy, and nightly rate for any address, anywhere in the world.
+Smart Rates Data: Use Smart Rates — AirDNA’s proprietary dynamic pricing solution – to receive recommended nightly rates for each of your properties.
+For more information on our API and its use cases, Contact Sales to get started with an API Key.
+
+Authentication
+All requests to AirDNA's APIs require an Authorization HTTP header with a Bearer token.
+
+You can obtain an API Key by contacting sales.
+For example, if your API Key is a1b2c3d4e5f6g7h8i9j0k1l2, then your Authorization header will be:
+
+Authorization: "Bearer a1b2c3d4e5f6g7h8i9j0k1l2"
+Example: Valid Token
+The following example uses cURL to demonstrate how to perform a successful request. This assumes:
+
+Your API Key has not expired.
+Your account has been authorized to access the API Package that the endpoint belongs to.
+Request
+curl -i -X POST \
+  https://api.airdna.co/api/enterprise/v2/market/search \
+  -H 'Authorization: Bearer a1b2c3d4e5f6g7h8i9j0k1l2' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "search_term": "Denver",
+    "pagination": {
+      "page_size": 1,
+      "offset": 0
+    }
+  }'
+Response 200
+{
+  "payload": {
+    "page_info": {
+      "page_size": 1,
+      "offset": 0
+    },
+    "results": [
+      {
+        "id": "airdna-163",
+        "name": "Denver",
+        "type": "market",
+        "listing_count": 15231,
+        "location_name": "Denver, Colorado, United States, US",
+        "location": {
+          "state": "Colorado",
+          "country": "United States",
+          "country_code": "us"
+        },
+        "legacy_location": {
+          "city_names": [],
+          "zipcodes": [],
+          "neighborhoods": []
+        }
+      }
+    ]
+  },
+  "status": {
+    "type": "success",
+    "response_id": "API-S-011",
+    "message": "Successfully fetched 1 Market for the requested parameters."
+  }
+}
+Example: Invalid Token
+The following example uses cURL to demonstrate what happens if you provide an invalid token.
+
+Request
+curl -i -X POST \
+  https://api.airdna.co/api/enterprise/v2/market/search \
+  -H 'Authorization: Bearer invalidToken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "search_term": "Denver",
+    "pagination": {
+      "page_size": 1,
+      "offset": 0
+    }
+  }'
+Response 401
+{
+    "error": {
+        "type": "invalid_credentials",
+        "message": "Unauthorized"
+    }
+}
+Example: Missing Token
+The following example uses cURL to demonstrate what happens if you omit a token.
+
+Request
+curl -i -X POST \
+  https://api.airdna.co/api/enterprise/v2/market/search \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "search_term": "Denver",
+    "pagination": {
+      "page_size": 1,
+      "offset": 0
+    }
+  }'
+Response 401
+{
+    "error": {
+        "type": "invalid_credentials",
+        "message": "Authorization token is missing"
+    }
+}
+Intro to Filters
+Filtering is an essential feature to help you obtain data that is relevant to your business needs.
+
+In the following sections, we will explain the do's and don'ts of filtering, and you'll also find a list of available filters that can be used to refine your queries.
+
+⚠️ Notice
+Filters are not required for every data scenario, but we encourage using them when available.
+To use one or more filters on a supported endpoint, you will need to send an array of supported Filter Objects.
+The order of the filters does not matter.
+The Filter Object
+The Filter Object is how you will use filters with supported endpoints.
+
+The following table describes each of the required properties for any Filter Object.
+
+Property	Data Type(s)	Description
+"field"	"string"	The data attribute that you want to filter on.
+"type"	"string"	The type of filter that you want to apply.
+"select"
+"multi_select"
+"lt"
+"lte"
+"gt"
+"gte"
+"range"
+"value"	
+"string"
+"number"
+"boolean"
+"array"
+The value(s) for the field that you want to filter on.
+⚠️ Notice
+Each Property described in the table is required
+The supported values for "type" and "value" will depend on the "field" you are filtering on.
+Using a Single Filter
+If you only need to use a single filter in your query, you can simply add it to the filters array.
+
+[Example]: Basic Usage
+In the following example, we use the filters array to retrieve a dataset where the Listings can accommodate a minimum of 8 people.
+
+{
+  "filters": [
+    {
+      "type": "gte"
+      "field": "accommodates",
+      "value": 8
+    }
+  ]
+}
+⚠️ Notice
+Filters must be sent from the filters property via an array.
+
+Some examples of how you might use this example filter:
+
+Exploring market Data:
+Explore markets within a country that have listings that can accommodate a minimum of 8 people.
+Explore submarkets within a country that have listings that can accommodate a minimum of 8 people.
+Exploring listing Data:
+Explore listings within a country that can accommodate a minimum of 8 people.
+Explore listings within a market that can accommodate a minimum of 8 people.
+Explore listings within a submarket that can accommodate a minimum of 8 people.
+Using Multiple Filters
+The ability to combine multiple filters is a key element that allows you to obtain data that meets your specific Business needs.
+
+⚠️ Notice
+Each field can only have one filter applied in any given query.
+[Example #1]: Using Numeric Constraints
+In the following example, we filter data where the Listings' bedrooms have a minimum=2 and maximum=6.
+
+Instead of trying to use both gte and lte filters, you can instead use the range filter.
+
+❎ INVALID
+Applying multiple filters on the same field is unsupported.
+
+{
+  "filters": [
+    {
+      "type": "gte"
+      "field": "bedrooms",
+      "value": 2
+    },
+    {
+      "type": "lte"
+      "field": "bedrooms",
+      "value": 6
+    }
+  ]
+}
+✅ VALID
+The supported way of using both gte and lte filtering is to use the range filter.
+
+{
+  "filters": [
+    {
+      "type": "range"
+      "field": "bedrooms",
+      "value": [2, 6]
+    }
+  ]
+}
+[Example #2]: Filtering Exact Values
+There may be some circumstances where you want each field to match an exact value. For this purpose, we have the select filter.
+
+In the following example, we filter data where Listings have exactly 2 bedrooms AND accommodates 4 people.
+
+{
+  "filters": [
+    {
+      "type": "select"
+      "field": "bedrooms",
+      "value": 2
+    },
+    {
+      "type": "select"
+      "field": "accommodates",
+      "value": 4
+    }
+  ]
+}
+[Example #3]: Filtering A Field To Multiple Exact Values
+You may also want to filter data where each field matches one or more values. For this purpose, we have the multi_select filter.
+
+In the following example, we filter data where Listings can accommodate exactly 4 people, AND that the data belongs to two distinct markets ("airdna-163" and "airdna-414").
+
+{
+  "filters": [
+    {
+      "type": "select"
+      "field": "accommodates",
+      "value": 4
+    },
+    {
+      "type": "multi_select"
+      "field": "market_id",
+      "value": ["airdna-163", "airdna-414"]
+    }
+  ]
+}
+Market Filters
+Investability
+Use this filter to only include results where the market's investability score matches the requested parameters.
+
+One of:Numeric Comparison FilterNumeric Equality FilterNumeric Range Filter
+Filter the field by numerical data. Used for numeric comparison operations.
+
+type
+required
+string
+Numeric Equality Filter type
+
+enum	operator	description
+"gt"	>	Greater Than
+"gte"	>=	Greater Than or Equal
+"lt"	<	Less Than
+"lte"	<=	Less Than or Equal
+Enum: "gt" "gte" "lt" "lte"
+field
+required
+string
+Field to filter on (i.e. "investability").
+
+Value: "investability"
+value
+required
+number [ 0 .. 100 ]
+Filter value. Must be a single number.
+
+Listing Count
+Use this to filter results where the market's total active listing_count matches the requested parameters.
+
+One of:Numeric Comparison FilterNumeric Equality FilterNumeric Range Filter
+Filter the field by numerical data. Used for numeric comparison operations.
+
+type
+required
+string
+Numeric Equality Filter type
+
+enum	operator	description
+"gt"	>	Greater Than
+"gte"	>=	Greater Than or Equal
+"lt"	<	Less Than
+"lte"	<=	Less Than or Equal
+Enum: "gt" "gte" "lt" "lte"
+field
+required
+string
+Field to filter on (i.e. "listing_count").
+
+Value: "listing_count"
+value
+required
+number >= 0
+Filter value. Must be a single number.
+
+Market ID
+Use this filter to only include results that belong to the provided market(s).
+
+One of:Single Select FilterMulti Select Filter
+Filter the field to a specific single value. Used for == operations.
+
+type
+required
+string
+Filter type (i.e. "select").
+
+Value: "select"
+field
+required
+string
+Field to filter on (i.e. "market_id").
+
+Value: "market_id"
+value
+required
+string
+Filter value. Must be a number, string, or boolean.
+
+Market Type
+Use this filter to only include results where the market_type matches the requested types.
+
+One of:Single Select FilterMulti Select Filter
+Filter the field to a specific single value. Used for == operations.
+
+type
+required
+string
+Filter type (i.e. "select").
+
+Value: "select"
+field
+required
+string
+Field to filter on (i.e. "market_type").
+
+Value: "market_type"
+value
+required
+string
+Filter value. Must be a number, string, or boolean.
+
+Enum: "coastal" "mid_size_city" "mountains_lakes" "rural" "suburban" … 1 more
+Regulation
+Use this filter to only include results where the market's regulation score matches the requested parameters.
+
+One of:Numeric Comparison FilterNumeric Equality FilterNumeric Range Filter
+Filter the field by numerical data. Used for numeric comparison operations.
+
+type
+required
+string
+Numeric Equality Filter type
+
+enum	operator	description
+"gt"	>	Greater Than
+"gte"	>=	Greater Than or Equal
+"lt"	<	Less Than
+"lte"	<=	Less Than or Equal
+Enum: "gt" "gte" "lt" "lte"
+field
+required
+string
+Field to filter on (i.e. "regulation").
+
+Value: "regulation"
+value
+required
+number [ 0 .. 100 ]
+Filter value. Must be a single number.
+
+Rental Demand
+Use this filter to only include results where the market's rental_demand score matches the requested parameters.
+
+One of:Numeric Comparison FilterNumeric Equality FilterNumeric Range Filter
+Filter the field by numerical data. Used for numeric comparison operations.
+
+type
+required
+string
+Numeric Equality Filter type
+
+enum	operator	description
+"gt"	>	Greater Than
+"gte"	>=	Greater Than or Equal
+"lt"	<	Less Than
+"lte"	<=	Less Than or Equal
+Enum: "gt" "gte" "lt" "lte"
+field
+required
+string
+Field to filter on (i.e. "rental_demand").
+
+Value: "rental_demand"
+value
+required
+number [ 0 .. 100 ]
+Filter value. Must be a single number.
+
+Revenue Growth
+Use this filter to only include results where the market's revenue_growth score matches the requested parameters.
+
+One of:Numeric Comparison FilterNumeric Equality FilterNumeric Range Filter
+Filter the field by numerical data. Used for numeric comparison operations.
+
+type
+required
+string
+Numeric Equality Filter type
+
+enum	operator	description
+"gt"	>	Greater Than
+"gte"	>=	Greater Than or Equal
+"lt"	<	Less Than
+"lte"	<=	Less Than or Equal
+Enum: "gt" "gte" "lt" "lte"
+field
+required
+string
+Field to filter on (i.e. "revenue_growth").
+
+Value: "revenue_growth"
+value
+required
+number [ 0 .. 100 ]
+Filter value. Must be a single number.
+
+Seasonality
+Use this filter to only include results where the market's seasonality score matches the requested parameters.
+
+One of:Numeric Comparison FilterNumeric Equality FilterNumeric Range Filter
+Filter the field by numerical data. Used for numeric comparison operations.
+
+type
+required
+string
+Numeric Equality Filter type
+
+enum	operator	description
+"gt"	>	Greater Than
+"gte"	>=	Greater Than or Equal
+"lt"	<	Less Than
+"lte"	<=	Less Than or Equal
+Enum: "gt" "gte" "lt" "lte"
+field
+required
+string
+Field to filter on (i.e. "seasonality").
+
+Value: "seasonality"
+value
+required
+number [ 0 .. 100 ]
+Filter value. Must be a single number.
+
+Listing Filters
+Accommodates
+Use this filter to only include results where the number of accommodates (guests) matches the requested parameters.
+
+One of:Numeric Comparison FilterNumeric Equality FilterNumeric Range Filter
+Filter the field by numerical data. Used for numeric comparison operations.
+
+type
+required
+string
+Numeric Equality Filter type
+
+enum	operator	description
+"gt"	>	Greater Than
+"gte"	>=	Greater Than or Equal
+"lt"	<	Less Than
+"lte"	<=	Less Than or Equal
+Enum: "gt" "gte" "lt" "lte"
+field
+required
+string
+Field to filter on (i.e. "accommodates").
+
+Value: "accommodates"
+value
+required
+number >= 0
+Filter value. Must be a single number.
+
+Amenities
+Use this filter to include results where the Listings match the requested amenity filters.
+
+type
+required
+string
+Type of filter (i.e. "jsonb_boolean").
+
+Value: "jsonb_boolean"
+field
+required
+string
+Field to filter on (i.e. "amenities").
+
+Value: "amenities"
+value
+required
+object
+Key-value pairs of Amenity filters.
+
+A value of true means the Amenity must be present.
+A value of false means the Amenity must not be present.
+Bathrooms
+Use this filter to only include results where the number of bathrooms matches the requested parameters.
+
+One of:Numeric Comparison FilterNumeric Equality FilterNumeric Range Filter
+Filter the field by numerical data. Used for numeric comparison operations.
+
+type
+required
+string
+Numeric Equality Filter type
+
+enum	operator	description
+"gt"	>	Greater Than
+"gte"	>=	Greater Than or Equal
+"lt"	<	Less Than
+"lte"	<=	Less Than or Equal
+Enum: "gt" "gte" "lt" "lte"
+field
+required
+string
+Field to filter on (i.e. "bathrooms").
+
+Value: "bathrooms"
+value
+required
+number >= 0
+Filter value. Must be a single number.
+
+Bedrooms
+Use this filter to only include results where the number of bedrooms matches the requested parameters.
+
+One of:Numeric Comparison FilterNumeric Equality FilterNumeric Range Filter
+Filter the field by numerical data. Used for numeric comparison operations.
+
+type
+required
+string
+Numeric Equality Filter type
+
+enum	operator	description
+"gt"	>	Greater Than
+"gte"	>=	Greater Than or Equal
+"lt"	<	Less Than
+"lte"	<=	Less Than or Equal
+Enum: "gt" "gte" "lt" "lte"
+field
+required
+string
+Field to filter on (i.e. "bedrooms").
+
+Value: "bedrooms"
+value
+required
+number >= 0
+Filter value. Must be a single number.
+
+Days Available LTM
+Use this filter to only include results where the days_available_ltm matches the requested parameters.
+
+Use this to filter to only include results where the days_available_ltm meet the matches the requested parameters.
+
+One of:Numeric Comparison FilterNumeric Equality FilterNumeric Range Filter
+Filter the field by numerical data. Used for numeric comparison operations.
+
+type
+required
+string
+Numeric Equality Filter type
+
+enum	operator	description
+"gt"	>	Greater Than
+"gte"	>=	Greater Than or Equal
+"lt"	<	Less Than
+"lte"	<=	Less Than or Equal
+Enum: "gt" "gte" "lt" "lte"
+field
+required
+string
+Field to filter on (i.e. "days_available_ltm").
+
+Value: "days_available_ltm"
+value
+required
+number [ 0 .. 365 ]
+Filter value. Must be a single number.
+
+Instant Book
+Use this filter to only include results where the Listing's value for instant_book matches the requested parameter.
+
+type
+required
+string
+Filter type (i.e. "select").
+
+Value: "select"
+field
+required
+string
+Field to filter on (i.e. "instant_book").
+
+Value: "instant_book"
+value
+required
+boolean
+Filter value. Must be true or false.
+
+Listing Type
+Use this to filter results where the listings' listing_type matches the requested value(s).
+
+For markets or submarkets, this means returning only markets/submarkets that have listings with the requested value(s) for listing_type.
+For listings, this means returning only listings with the requested value(s) for listing_type.
+One of:Single Select FilterMulti Select Filter
+Filter the field to a specific single value. Used for == operations.
+
+type
+required
+string
+Filter type (i.e. "select").
+
+Value: "select"
+field
+required
+string
+Field to filter on (i.e. "listing_type").
+
+Value: "listing_type"
+value
+required
+string
+Filter value. Must be a number, string, or boolean.
+
+Enum: "entire_place" "private_room" "shared_room"
+Occupancy Rate LTM
+Use this to filter results where the listings' occupancy in the last 12 months matches the requested parameters.
+
+Use this filter to only include results where the occupancy matches the requested parameters.
+
+One of:Numeric Comparison FilterNumeric Equality FilterNumeric Range Filter
+Filter the field by numerical data. Used for numeric comparison operations.
+
+type
+required
+string
+Numeric Equality Filter type
+
+enum	operator	description
+"gt"	>	Greater Than
+"gte"	>=	Greater Than or Equal
+"lt"	<	Less Than
+"lte"	<=	Less Than or Equal
+Enum: "gt" "gte" "lt" "lte"
+field
+required
+string
+Field to filter on (i.e. "occupancy_rate_ltm").
+
+Value: "occupancy_rate_ltm"
+value
+required
+number [ 0 .. 1 ]
+Filter value. Must be a single number.
+
+Price Tier
+Use this to filter results where the listings' price_tier matches the value(s).
+
+For markets or submarkets, this means returning only markets/submarkets that have listings with the requested value(s) for price_tier.
+For listings, this means returning only listings with the requested value(s) for price_tier.
+One of:Single Select FilterMulti Select Filter
+Filter the field to a specific single value. Used for == operations.
+
+type
+required
+string
+Filter type (i.e. "select").
+
+Value: "select"
+field
+required
+string
+Field to filter on (i.e. "price_tier").
+
+Value: "price_tier"
+value
+required
+string
+Filter value. Must be a number, string, or boolean.
+
+Enum: "budget" "economy" "luxury" "midscale" "upscale"
+Professionally Managed
+Use this filter to only include results where the listings' value for professionally_managed matches the requested parameter.
+
+type
+required
+string
+Filter type (i.e. "select").
+
+Value: "select"
+field
+required
+string
+Field to filter on (i.e. "professionally_managed").
+
+Value: "professionally_managed"
+value
+required
+boolean
+Filter value. Must be true or false.
+
+Property Type
+Use this to filter results where the listings' property_type matches the requested parameters.
+
+Use this filter to only receive results where the property_type matches the requested parameters.
+
+One of:Single Select FilterMulti Select Filter
+Filter the field to a specific single value. Used for == operations.
+
+type
+required
+string
+Filter type (i.e. "select").
+
+Value: "select"
+field
+required
+string
+Field to filter on (i.e. "property_type").
+
+Value: "property_type"
+value
+required
+string or null
+Filter value. Must be a number, string, or boolean.
+
+Ratings
+Use this filter to only include results where the listings' ratings matches the requested parameters.
+
+One of:Numeric Comparison FilterNumeric Equality FilterNumeric Range Filter
+Filter the field by numerical data. Used for numeric comparison operations.
+
+type
+required
+string
+Numeric Equality Filter type
+
+enum	operator	description
+"gt"	>	Greater Than
+"gte"	>=	Greater Than or Equal
+"lt"	<	Less Than
+"lte"	<=	Less Than or Equal
+Enum: "gt" "gte" "lt" "lte"
+field
+required
+string
+Field to filter on (i.e. "ratings").
+
+Value: "ratings"
+value
+required
+number [ 0 .. 5 ]
+Filter value. Must be a single number.
+
+Real Estate Type
+Use this to filter results where the listings' real_estate_type matches the requested value(s).
+
+For markets or submarkets, this means returning only markets/submarkets that have listings with the requested value(s) for real_estate_type.
+For listings, this means returning only listings with the requested value(s) for real_estate_type.
+One of:Single Select FilterMulti Select Filter
+Filter the field to a specific single value. Used for == operations.
+
+type
+required
+string
+Filter type (i.e. "select").
+
+Value: "select"
+field
+required
+string
+Field to filter on (i.e. "real_estate_type").
+
+Value: "real_estate_type"
+value
+required
+string
+Filter value. Must be a number, string, or boolean.
+
+Enum: "apartment" "bed_and_breakfast" "house" "unique"
+Review Count
+Use this filter to only include results where the listings' reviews_count matches the requested parameters.
+
+Use this filter to only include results where the Listings' reviews_count matches the requested parameters.
+
+One of:Numeric Comparison FilterNumeric Equality FilterNumeric Range Filter
+Filter the field by numerical data. Used for numeric comparison operations.
+
+type
+required
+string
+Numeric Equality Filter type
+
+enum	operator	description
+"gt"	>	Greater Than
+"gte"	>=	Greater Than or Equal
+"lt"	<	Less Than
+"lte"	<=	Less Than or Equal
+Enum: "gt" "gte" "lt" "lte"
+field
+required
+string
+Field to filter on (i.e. "reviews_count").
+
+Value: "reviews_count"
+value
+required
+number >= 0
+Filter value. Must be a single number.
+
+Superhost
+Use this filter to only include results where the Listing's value for superhost matches the requested parameter.
+
+type
+required
+string
+Filter type (i.e. "select").
+
+Value: "select"
+field
+required
+string
+Field to filter on (i.e. "superhost").
+
+Value: "superhost"
+value
+required
+boolean
+Filter value. Must be true or false.
+
+Percent Active
+Use this filter to only include results where the listings are active for that percentage of the month.
+
+Use this filter to only include results where the listings are active for that percentage of the month.
+
+One of:Numeric Comparison FilterNumeric Equality FilterNumeric Range Filter
+Filter the field by numerical data. Used for numeric comparison operations.
+
+type
+required
+string
+Numeric Equality Filter type
+
+enum	operator	description
+"gt"	>	Greater Than
+"gte"	>=	Greater Than or Equal
+"lt"	<	Less Than
+"lte"	<=	Less Than or Equal
+Enum: "gt" "gte" "lt" "lte"
+field
+required
+string
+Field to filter on (i.e. "percent_active")
+
+Value: "percent_active"
+value
+required
+number ( 0 .. 1 ]
+Filter value. Must be a single number.
+
+Market Data
+Whether you're looking to discover trending markets, learn about a market's historical performance, or gauge its future outlook, these endpoints can support your research.
+
+Historical Market Data
+We provide between 12 and 60 months of monthly historical data for the following key metrics:
+
+Booking Data
+Occupancy
+Booking Demand
+Booking Lead Time
+Average Length of Stay
+Pricing Data
+Average Revenue
+Average Daily Rate
+RevPAR (Revenue Per Available Rental)
+Explore Markets
+In addition to our historical data, our endpoints can help you explore and evaluate markets using a combination of the following:
+Market Filters
+Listing Filters
+To find the market_id for a known Market, you can use our Market Search endpoint.
+Search for a Market or Submarket by Search Term or Coordinates.
+If you need to find AirDNA Markets or Submarkets, this endpoint allows you to find them via a simple search_term or lat and lng.
+
+Each result will provide:
+
+A unique id that can be used in other endpoints for obtaining data.
+The Name of the market
+Whether it is a Market or Submarket
+Basic Location details
+Security
+headerAuth
+Request
+Request Body schema: application/json
+required
+Schema for performing a request to search for a Market or Submarket
+
+One of:Search By TermSearch By Coordinates
+Request Schema for searching for Markets By Search Term.
+
+pagination
+required
+object (PaginationRequestSchema)
+Use this object to request a specific page of data.
+
+search_term
+required
+string
+A search term to find a Market. It's recommended this be a city, a state or a neighborhood
+
+Responses
+200Successful Market Search Response
+Response Schema: application/json
+payload
+required
+object (MarketSearchResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+500An internal server error occurred.
+Fetch details about a specific Market.
+Provides basic information about a specific Market. Includes key data such as:
+
+Summary Metrics (Last 12 Months)
+Market Score
+Occupancy
+Revenue
+RevPAR
+Security
+headerAuth
+Request
+path Parameters
+marketId
+required
+string (MarketIdParam)
+AirDNA ID for the Market. This can often be found as market_id.
+
+Example: airdna-163
+Responses
+200Successful Market Details Response
+Response Schema: application/json
+payload
+required
+object (Market)
+General Information about a Market.
+
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Explore Markets within a Country.
+If you're looking to explore & compare top Markets, you can do so either by general Market characteristics, or even compare them based on specific types of Listings!
+
+Each Market includes the following summary metrics (Last 12 months):
+
+Market Score
+Occupancy
+Revenue
+RevPAR
+Here are some examples of the many things you can do:
+
+Sort Markets by highest Market Score, Occupancy, Revenue, Average Daily Rate or Review Count.
+Compare specific Markets in the same country by using the Market ID Filter.
+Find Markets that have a high Seasonality score (a higher score means the Market is more stable throughout the year).
+Find Markets that have a high Regulation score (a higher score means it's less regulated/strict).
+Find Markets that have a high Rental Demand score (a higher score means the booking demand is higher).
+Use Listing Filters to compare Market performance for certain types of STR Listings.
+Security
+headerAuth
+Request
+path Parameters
+countryCode
+required
+string (CountryCodeParam)
+ISO Country Code in the format defined by ISO 3166-1 Alpha-2.
+
+Enum: "ad" "ae" "af" "ag" "ai" … 245 more
+Example: us
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Markets relative to a Country.
+
+pagination
+required
+object (PaginationRequestSchema)
+Use this object to request a specific page of data.
+
+bounding_box	
+object (BoundingBoxRequestSchema)
+Use this object to include only results found within a given geographic rectangle. The rectangle is defined by two coordinates, the North East (ne) and South West (se) corners.
+
+filters	
+Array of objects (CountryMarketsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+currency	
+string (CurrencyISO)
+Default: "usd"
+ISO 4217 Currency Codes used for converting currency data.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+sort_order	
+string (MarketSortOrder)
+Default: "market_score"
+The attribute by which the retrieved results will be sorted.
+
+Sorted in descending order (Highest to Lowest).
+Enum: "adr" "market_score" "occupancy" "revenue" "review_count"
+include_geoms	
+boolean
+Default: false
+Set this to true if you want to include the approximate geometric boundaries for the returned data.
+
+Responses
+200Successfully retrieved Markets within a Country.
+Response Schema: application/json
+payload
+required
+object (CountryMarketsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Occupancy Metrics for a Market.
+This endpoint provides 12 to 60 months of historical monthly occupancy data for a Market.
+
+Each month shows the following metrics:
+
+The month.
+The average occupancy rate of Listings in that month.
+The number of available Listings in that month.
+The number of booked Listings in that month.
+The number of days available in that month.
+The number of days booked in that month.
+Supports some Listing Filters to calculate historical occupancy for certain types of STR Listings within the Market.
+
+Supports requests to calculate custom percentiles for occupancy rates within the Market.
+
+Security
+headerAuth
+Request
+path Parameters
+marketId
+required
+string (MarketIdParam)
+AirDNA ID for the Market. This can often be found as market_id.
+
+Example: airdna-163
+Request Body schema: application/json
+required
+Schema for performing a request to fetch occupancy metrics for a Market.
+
+num_months
+required
+integer [ 12 .. 60 ]
+The number of months to request metrics for.
+
+filters	
+Array of objects (MarketMetricsFilterListWithPercentActiveSchema)
+Array of filters that can be used to refine your search results.
+
+percentiles	
+Array of numbers (PercentilesRequestSchema)
+An optional array of percentiles to request data for. Each percentile must be in decimal form (i.e. 0.25 for 25th percentile) and between 0 and 1.
+
+Responses
+200Successful Market Occupancy Metrics Response.
+Response Schema: application/json
+payload
+required
+object (MarketOccupancyMetricsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Average Revenue Metrics for a Market.
+This endpoint provides 12 to 60 months of historical monthly revenue data for a Market.
+
+Supports Currency Conversion for non-USD currencies.
+By default, all currency data is in USD.
+Supports some Listing Filters to calculate historical revenue for certain types of STR Listings within the Market.
+Supports requests to calculate custom percentiles for revenue within the Market.
+Security
+headerAuth
+Request
+path Parameters
+marketId
+required
+string (MarketIdParam)
+AirDNA ID for the Market. This can often be found as market_id.
+
+Example: airdna-163
+Request Body schema: application/json
+required
+Schema for performing a request to fetch average revenue metrics with currency for a Market.
+
+num_months
+required
+integer [ 12 .. 60 ]
+The number of months to request metrics for.
+
+filters	
+Array of objects (MarketMetricsFilterListWithPercentActiveSchema)
+Array of filters that can be used to refine your search results.
+
+currency	
+string (CurrencyISO)
+ISO 4217 Currency Codes.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+percentiles	
+Array of numbers (PercentilesRequestSchema)
+An optional array of percentiles to request data for. Each percentile must be in decimal form (i.e. 0.25 for 25th percentile) and between 0 and 1.
+
+Responses
+200Successful Market Average Revenue Metrics Response
+Response Schema: application/json
+payload
+required
+object (MarketAvgRevenueMetricsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Average Daily Rate Metrics for a Market.
+This endpoint provides 12 to 60 months of historical monthly average daily rate data for a Market.
+
+Supports Currency Conversion for non-USD currencies.
+By default, all currency data is in USD.
+Supports some Listing Filters to calculate historical ADR for certain types of STR Listings within the Market.
+Supports requests to calculate custom percentiles for ADR within the Market.
+Security
+headerAuth
+Request
+path Parameters
+marketId
+required
+string (MarketIdParam)
+AirDNA ID for the Market. This can often be found as market_id.
+
+Example: airdna-163
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Average Daily Rate metrics for a Market.
+
+num_months
+required
+integer [ 12 .. 60 ]
+The number of months to request metrics for.
+
+filters	
+Array of objects (MarketMetricsFilterListWithPercentActiveSchema)
+Array of filters that can be used to refine your search results.
+
+currency	
+string (CurrencyISO)
+ISO 4217 Currency Codes.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+percentiles	
+Array of numbers (PercentilesRequestSchema)
+An optional array of percentiles to request data for. Each percentile must be in decimal form (i.e. 0.25 for 25th percentile) and between 0 and 1.
+
+Responses
+200Successful Market Average Daily Rate Metrics Response
+Response Schema: application/json
+payload
+required
+object (MarketAvgDailyRateMetricsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch RevPAR Metrics for a Market.
+This endpoint provides 12 to 60 months of historical monthly RevPAR (Revenue Per Available Rental) data for a Market.
+
+Supports Currency Conversion for non-USD currencies.
+By default, all currency data is in USD.
+Supports some Listing Filters to calculate historical RevPAR for certain types of STR Listings within the Market.
+Security
+headerAuth
+Request
+path Parameters
+marketId
+required
+string (MarketIdParam)
+AirDNA ID for the Market. This can often be found as market_id.
+
+Example: airdna-163
+Request Body schema: application/json
+required
+Schema for performing a request to fetch RevPAR metrics for a Market.
+
+num_months
+required
+integer [ 12 .. 60 ]
+The number of months to request metrics for.
+
+currency	
+string (CurrencyISO)
+ISO 4217 Currency Codes.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+filters	
+Array of objects (MarketMetricsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+Responses
+200Successful Market Revpar Metrics Response
+Response Schema: application/json
+payload
+required
+object (MarketRevparMetricsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Booking Lead Time Metrics for a Market.
+This endpoint provides 12 to 20 months of historical monthly booking lead time data for a Market.
+
+Supports some Listing Filters to calculate booking lead time for certain types of STR Listings within the Market.
+Security
+headerAuth
+Request
+path Parameters
+marketId
+required
+string (MarketIdParam)
+AirDNA ID for the Market. This can often be found as market_id.
+
+Example: airdna-163
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Booking Lead Time for a Market or Submarket.
+
+num_months
+required
+integer [ 12 .. 24 ]
+The number of months to request metrics for.
+
+filters	
+Array of objects (MarketMetricsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+Responses
+200Successful Market Booking Lead Time Metrics Response
+Response Schema: application/json
+payload
+required
+object (MarketBookingLeadTimeMetricsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Average Length of Stay Metrics for a Market.
+This endpoint provides 12 to 20 months of historical monthly average length of stay data for a Market.
+
+Supports some Listing Filters to calculate average length of stay for certain types of STR Listings within the Market.
+Security
+headerAuth
+Request
+path Parameters
+marketId
+required
+string (MarketIdParam)
+AirDNA ID for the Market. This can often be found as market_id.
+
+Example: airdna-163
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Average Length of Stay for a Market or Submarket.
+
+num_months
+required
+integer [ 12 .. 24 ]
+The number of months to request metrics for.
+
+filters	
+Array of objects (MarketMetricsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+Responses
+200Successful Market Average Length of Stay Metrics Response
+Response Schema: application/json
+payload
+required
+object (MarketAvgLengthOfStayMetricsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Active Listings Count for a Market.
+This endpoint provides 12 to 60 months of active listings count data for a Market.
+
+Supports some Listing Filters to calculate active listings count data for certain types of STR Listings within the Market.
+Security
+headerAuth
+Request
+path Parameters
+marketId
+required
+string (MarketIdParam)
+AirDNA ID for the Market. This can often be found as market_id.
+
+Example: airdna-163
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Active Listings Count for a Market.
+
+num_months
+required
+integer [ 12 .. 60 ]
+The number of months to request metrics for.
+
+filters	
+Array of objects (MarketMetricsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+Responses
+200Successful Market Active Listings Count Response
+Response Schema: application/json
+payload
+required
+object (MarketActiveListingsCountResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Future Daily Pricing for a Market.
+This endpoint provides 1 to 12 months of future daily pricing data for a Market.
+
+Supports some Listing Filters to calculate future pricing data for certain types of STR Listings within the Market.
+Supports requests to calculate custom percentiles for future daily pricing within the Market.
+Security
+headerAuth
+Request
+path Parameters
+marketId
+required
+string (MarketIdParam)
+AirDNA ID for the Market. This can often be found as market_id.
+
+Example: airdna-163
+Request Body schema: application/json
+required
+Schema for performing a request to fetch future metrics with currency for a Market.
+
+num_months
+required
+integer [ 1 .. 12 ]
+The number of months to request metrics for.
+
+filters	
+Array of objects (MarketMetricsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+percentiles	
+Array of numbers
+An optional array of percentiles to request data for. Each percentile must be in decimal form (i.e. 0.25 for 25th percentile) and between 0 and 1.
+
+currency	
+string (CurrencyISO)
+ISO 4217 Currency Codes.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+Responses
+200Successful Market Future Rates Response
+Response Schema: application/json
+payload
+required
+object (MarketFuturePricingResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Submarket Data
+Whether you're looking to discover trending Submarkets or learn about a Submarket's historical performance, these endpoints can support your research.
+
+Historical Submarket Data
+We provide between 12 and 60 months of monthly historical data for the following key metrics:
+
+Booking Data
+Occupancy
+Booking Demand
+Booking Lead Time
+Average Length of Stay
+Pricing Data
+Average Revenue
+Average Daily Rate
+RevPAR (Revenue Per Available Rental)
+Explore Markets
+In addition to our historical data, our endpoints can help you explore and evaluate Markets using a combination of the following:
+Market Filters
+Listing Filters
+To find the submarket_id for a known Submarket, you can use our Market Search endpoint.
+Search for a Market or Submarket by Search Term or Coordinates.
+If you need to find AirDNA Markets or Submarkets, this endpoint allows you to find them via a simple search_term or lat and lng.
+
+Each result will provide:
+
+A unique id that can be used in other endpoints for obtaining data.
+The Name of the market
+Whether it is a Market or Submarket
+Basic Location details
+Security
+headerAuth
+Request
+Request Body schema: application/json
+required
+Schema for performing a request to search for a Market or Submarket
+
+One of:Search By TermSearch By Coordinates
+Request Schema for searching for Markets By Search Term.
+
+pagination
+required
+object (PaginationRequestSchema)
+Use this object to request a specific page of data.
+
+search_term
+required
+string
+A search term to find a Market. It's recommended this be a city, a state or a neighborhood
+
+Responses
+200Successful Market Search Response
+Response Schema: application/json
+payload
+required
+object (MarketSearchResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+500An internal server error occurred.
+Fetch details about a specific Submarket.
+Provides basic information about a specific Submarket. Includes key data such as:
+
+Summary Metrics (Last 12 Months)
+Market Score
+Occupancy
+Revenue
+RevPAR
+Security
+headerAuth
+Request
+path Parameters
+submarketId
+required
+string (SubmarketIdParam)
+AirDNA ID for the Submarket. This can often be found as submarket_id.
+
+Example: airdna-2331
+Responses
+200Successful Submarket Details Response
+Response Schema: application/json
+payload
+required
+object (Submarket)
+General Information about a Submarket.
+
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Explore Submarkets within a Country.
+If you're looking to explore & compare top Submarkets, you can do so either by general Submarket characteristics, or even compare them based on specific types of Listings!
+
+Each Submarket includes the following summary metrics (Last 12 months):
+
+Market Score
+Occupancy
+Revenue
+RevPAR
+Here are some examples of the many things you can do:
+
+Sort Submarkets by highest Market Score, Occupancy, Revenue, Average Daily Rate or Review Count.
+Find Submarkets that have a high Seasonality score (a higher score means the Submarket is more stable throughout the year).
+Find Submarkets that have a high Regulation score (a higher score means it's less regulated/strict).
+Find Submarkets that have a high Rental Demand score (a higher score means the booking demand is higher).
+Use our Listing Filters to compare Submarket performance for certain types of STR Listings.
+Security
+headerAuth
+Request
+path Parameters
+countryCode
+required
+string (CountryCodeParam)
+ISO Country Code in the format defined by ISO 3166-1 Alpha-2.
+
+Enum: "ad" "ae" "af" "ag" "ai" … 245 more
+Example: us
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Submarkets relative to a Country.
+
+pagination
+required
+object (PaginationRequestSchema)
+Use this object to request a specific page of data.
+
+bounding_box	
+object (BoundingBoxRequestSchema)
+Use this object to include only results found within a given geographic rectangle. The rectangle is defined by two coordinates, the North East (ne) and South West (se) corners.
+
+filters	
+Array of objects (CountryMarketsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+currency	
+string (CurrencyISO)
+Default: "usd"
+ISO 4217 Currency Codes used for converting currency data.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+sort_order	
+string (MarketSortOrder)
+Default: "market_score"
+The attribute by which the retrieved results will be sorted.
+
+Sorted in descending order (Highest to Lowest).
+Enum: "adr" "market_score" "occupancy" "revenue" "review_count"
+include_geoms	
+boolean
+Default: false
+Set this to true if you want to include the approximate geometric boundaries for the returned data.
+
+Responses
+200Successfully retrieved Submarkets within a Country.
+Response Schema: application/json
+payload
+required
+object (CountrySubmarketsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Explore Submarkets within a Market.
+If you're looking to explore & compare top Submarkets, you can do so either by general Submarket characteristics, or even compare them based on specific types of Listings!
+
+Each Submarket includes the following summary metrics (Last 12 months):
+
+Market Score
+Occupancy
+Revenue
+RevPAR
+Here are some examples of the many things you can do:
+
+Sort Submarkets by highest Market Score, Occupancy, Revenue, Average Daily Rate or Review Count.
+Find Submarkets that have a high Seasonality score (a higher score means the Submarket is more stable throughout the year).
+Find Submarkets that have a high Regulation score (a higher score means it's less regulated/strict).
+Find Submarkets that have a high Rental Demand score (a higher score means the booking demand is higher).
+Use our Listing Filters to compare Submarket performance for certain types of STR Listings.
+Security
+headerAuth
+Request
+path Parameters
+marketId
+required
+string (MarketIdParam)
+AirDNA ID for the Market. This can often be found as market_id.
+
+Example: airdna-163
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Submarkets relative to a Market.
+
+pagination
+required
+object (PaginationRequestSchema)
+Use this object to request a specific page of data.
+
+bounding_box	
+object (BoundingBoxRequestSchema)
+Use this object to include only results found within a given geographic rectangle. The rectangle is defined by two coordinates, the North East (ne) and South West (se) corners.
+
+filters	
+Array of objects (MarketSubmarketsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+currency	
+string (CurrencyISO)
+Default: "usd"
+ISO 4217 Currency Codes used for converting currency data.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+sort_order	
+string (MarketSortOrder)
+Default: "market_score"
+The attribute by which the retrieved results will be sorted.
+
+Sorted in descending order (Highest to Lowest).
+Enum: "adr" "market_score" "occupancy" "revenue" "review_count"
+include_geoms	
+boolean
+Default: false
+Set this to true if you want to include the approximate geometric boundaries for the returned data.
+
+Responses
+200Successfully retrieved Submarkets within a Country.
+Response Schema: application/json
+payload
+required
+object (CountrySubmarketsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Occupancy Metrics for a Submarket.
+This endpoint provides 12 to 60 months of historical monthly occupancy data for a Submarket.
+
+Each month shows the following metrics:
+
+The month.
+The average occupancy rate of Listings in that month.
+The number of available Listings in that month.
+The number of booked Listings in that month.
+The number of days available in that month.
+The number of days booked in that month.
+Supports some Listing Filters to calculate historical occupancy for certain types of STR Listings within the Submarket.
+
+Supports requests to calculate custom percentiles for occupancy rates within the Submarket.
+
+Security
+headerAuth
+Request
+path Parameters
+submarketId
+required
+string (SubmarketIdParam)
+AirDNA ID for the Submarket. This can often be found as submarket_id.
+
+Example: airdna-2331
+Request Body schema: application/json
+required
+Schema for performing a request to fetch occupancy metrics for a Submarket.
+
+num_months
+required
+integer [ 12 .. 60 ]
+The number of months to request metrics for.
+
+filters	
+Array of objects (MarketMetricsFilterListWithPercentActiveSchema)
+Array of filters that can be used to refine your search results.
+
+percentiles	
+Array of numbers (PercentilesRequestSchema)
+An optional array of percentiles to request data for. Each percentile must be in decimal form (i.e. 0.25 for 25th percentile) and between 0 and 1.
+
+Responses
+200Successful Submarket Occupancy Metrics Response.
+Response Schema: application/json
+payload
+required
+object (MarketOccupancyMetricsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Average Revenue Metrics for a Submarket.
+This endpoint provides 12 to 60 months of historical monthly revenue data for a Submarket.
+
+Supports Currency Conversion for non-USD currencies.
+By default, all currency data is in USD.
+Supports some Listing Filters to calculate historical revenue for certain types of STR Listings within the Submarket.
+Supports requests to calculate custom percentiles for revenue within the Submarket.
+Security
+headerAuth
+Request
+path Parameters
+submarketId
+required
+string (SubmarketIdParam)
+AirDNA ID for the Submarket. This can often be found as submarket_id.
+
+Example: airdna-2331
+Request Body schema: application/json
+required
+Schema for performing a request to fetch average revenue metrics with currency for a Submarket.
+
+num_months
+required
+integer [ 12 .. 60 ]
+The number of months to request metrics for.
+
+filters	
+Array of objects (MarketMetricsFilterListWithPercentActiveSchema)
+Array of filters that can be used to refine your search results.
+
+currency	
+string (CurrencyISO)
+ISO 4217 Currency Codes.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+percentiles	
+Array of numbers (PercentilesRequestSchema)
+An optional array of percentiles to request data for. Each percentile must be in decimal form (i.e. 0.25 for 25th percentile) and between 0 and 1.
+
+Responses
+200Successful Submarket Average Revenue Metrics Response
+Response Schema: application/json
+payload
+required
+object (MarketAvgRevenueMetricsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Average Daily Rate Metrics for a Submarket.
+This endpoint provides 12 to 60 months of historical monthly average daily rate data for a Submarket.
+
+Supports Currency Conversion for non-USD currencies.
+By default, all currency data is in USD.
+Supports some Listing Filters to calculate historical ADR for certain types of STR Listings within the Submarket.
+Supports requests to calculate custom percentiles for ADR within the Submarket.
+Security
+headerAuth
+Request
+path Parameters
+submarketId
+required
+string (SubmarketIdParam)
+AirDNA ID for the Submarket. This can often be found as submarket_id.
+
+Example: airdna-2331
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Average Daily Rate metrics for a Submarket.
+
+num_months
+required
+integer [ 12 .. 60 ]
+The number of months to request metrics for.
+
+filters	
+Array of objects (MarketMetricsFilterListWithPercentActiveSchema)
+Array of filters that can be used to refine your search results.
+
+currency	
+string (CurrencyISO)
+ISO 4217 Currency Codes.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+percentiles	
+Array of numbers (PercentilesRequestSchema)
+An optional array of percentiles to request data for. Each percentile must be in decimal form (i.e. 0.25 for 25th percentile) and between 0 and 1.
+
+Responses
+200Successful Submarket Average Daily Rate Metrics Response
+Response Schema: application/json
+payload
+required
+object (MarketAvgDailyRateMetricsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch RevPAR Metrics for a Submarket.
+This endpoint provides 12 to 60 months of historical monthly RevPAR (Revenue Per Available Rental) data for a Submarket.
+
+Supports Currency Conversion for non-USD currencies.
+By default, all currency data is in USD.
+Supports some Listing Filters to calculate historical RevPAR for certain types of STR Listings within the Submarket.
+Security
+headerAuth
+Request
+path Parameters
+submarketId
+required
+string (SubmarketIdParam)
+AirDNA ID for the Submarket. This can often be found as submarket_id.
+
+Example: airdna-2331
+Request Body schema: application/json
+required
+Schema for performing a request to fetch RevPAR metrics for a Submarket.
+
+num_months
+required
+integer [ 12 .. 60 ]
+The number of months to request metrics for.
+
+currency	
+string (CurrencyISO)
+ISO 4217 Currency Codes.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+filters	
+Array of objects (MarketMetricsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+Responses
+200Successful Submarket Revpar Metrics Response
+Response Schema: application/json
+payload
+required
+object (MarketRevparMetricsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Booking Lead Time Metrics for a Submarket.
+This endpoint provides 12 to 20 months of historical monthly booking lead time data for a Submarket.
+
+Supports some Listing Filters to calculate booking lead time for certain types of STR Listings within the Submarket.
+Security
+headerAuth
+Request
+path Parameters
+submarketId
+required
+string (SubmarketIdParam)
+AirDNA ID for the Submarket. This can often be found as submarket_id.
+
+Example: airdna-2331
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Booking Lead Time for a Submarket.
+
+num_months
+required
+integer [ 12 .. 24 ]
+The number of months to request metrics for.
+
+filters	
+Array of objects (MarketMetricsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+Responses
+200Successful Submarket Booking Lead Time Metrics Response
+Response Schema: application/json
+payload
+required
+object (MarketBookingLeadTimeMetricsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Average Length of Stay Metrics for a Submarket.
+This endpoint provides 12 to 20 months of historical monthly average length of stay data for a Submarket.
+
+Supports some Listing Filters to calculate average length of stay for certain types of STR Listings within the Submarket.
+Security
+headerAuth
+Request
+path Parameters
+submarketId
+required
+string (SubmarketIdParam)
+AirDNA ID for the Submarket. This can often be found as submarket_id.
+
+Example: airdna-2331
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Average Length Of Stay metrics for a Submarket.
+
+num_months
+required
+integer [ 12 .. 24 ]
+The number of months to request metrics for.
+
+filters	
+Array of objects (MarketMetricsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+Responses
+200Successful Submarket Average Length of Stay Metrics Response
+Response Schema: application/json
+payload
+required
+object (MarketAvgLengthOfStayMetricsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Active Listings Count for a Submarket.
+This endpoint provides 12 to 60 months of active listings count data for a Submarket.
+
+Supports some Listing Filters to calculate active listings count data for certain types of STR Listings within the Submarket.
+Security
+headerAuth
+Request
+path Parameters
+submarketId
+required
+string (SubmarketIdParam)
+AirDNA ID for the Submarket. This can often be found as submarket_id.
+
+Example: airdna-2331
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Active Listings Count for a Submarket.
+
+num_months
+required
+integer [ 12 .. 60 ]
+The number of months to request metrics for.
+
+filters	
+Array of objects (MarketMetricsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+Responses
+200Successful Submarket Active Listings Count Response
+Response Schema: application/json
+payload
+required
+object (MarketActiveListingsCountResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Future Daily Pricing for a Submarket.
+This endpoint provides 1 to 12 months of future daily pricing data for a Submarket.
+
+Supports some Listing Filters to calculate future pricing data for certain types of STR Listings within the Submarket.
+Supports requests to calculate custom percentiles for future daily pricing within the Submarket.
+Security
+headerAuth
+Request
+path Parameters
+submarketId
+required
+string (SubmarketIdParam)
+AirDNA ID for the Submarket. This can often be found as submarket_id.
+
+Example: airdna-2331
+Request Body schema: application/json
+required
+Schema for performing a request to fetch future metrics with currency for a Submarket.
+
+num_months
+required
+integer [ 1 .. 12 ]
+The number of months to request metrics for.
+
+filters	
+Array of objects (MarketMetricsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+percentiles	
+Array of numbers
+An optional array of percentiles to request data for. Each percentile must be in decimal form (i.e. 0.25 for 25th percentile) and between 0 and 1.
+
+currency	
+string (CurrencyISO)
+ISO 4217 Currency Codes.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+Responses
+200Successful Submarket Future Rates Response
+Response Schema: application/json
+payload
+required
+object (MarketFuturePricingResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+STR Listing Data
+This section provides data for individual Short-Term Rental listings from Airbnb & Vrbo. It is ideal for searching for listings within certain parameters and also fetching metrics for individual listings.
+
+Explore Listings
+Our endpoints can help you explore and evaluate listings. You can search for:
+
+Listings within a Country
+Listings within a Market
+Comps for a Listing
+Future Pricing for a Listing
+Historical Listing Data
+We provide between 12 and 60 months of monthly historical data for individual and multiple listings including the following:
+
+Metrics such as date, occupancy, revenue, and ADR
+Details such as number of bedrooms, ratings, reviews, and market
+Recommendations:
+Use Listing Filters to narrow down your search results for listings.
+To find the market_id for a known Market, you can use our Market Search endpoint.
+Search for a Market or Submarket by Search Term or Coordinates.
+If you need to find AirDNA Markets or Submarkets, this endpoint allows you to find them via a simple search_term or lat and lng.
+
+Each result will provide:
+
+A unique id that can be used in other endpoints for obtaining data.
+The Name of the market
+Whether it is a Market or Submarket
+Basic Location details
+Security
+headerAuth
+Request
+Request Body schema: application/json
+required
+Schema for performing a request to search for a Market or Submarket
+
+One of:Search By TermSearch By Coordinates
+Request Schema for searching for Markets By Search Term.
+
+pagination
+required
+object (PaginationRequestSchema)
+Use this object to request a specific page of data.
+
+search_term
+required
+string
+A search term to find a Market. It's recommended this be a city, a state or a neighborhood
+
+Responses
+200Successful Market Search Response
+Response Schema: application/json
+payload
+required
+object (MarketSearchResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+500An internal server error occurred.
+Explore Listings within a Country.
+If you're looking to explore listings within a country, you can do so by general listing characteristics or metrics.
+
+Use Listing Filters to specify details for listings you want to search for.
+
+Here are some examples of the many things you can do:
+
+Sort listings by highest Occupancy, Revenue, Average Daily Rate or Review Count.
+Find listings with an average Rating of 4 or higher.
+Find listings within a certain Market Type.
+Find listings that have a high Investability or Revenue Growth.
+Security
+headerAuth
+Request
+path Parameters
+countryCode
+required
+string (CountryCodeParam)
+ISO Country Code in the format defined by ISO 3166-1 Alpha-2.
+
+Enum: "ad" "ae" "af" "ag" "ai" … 245 more
+Example: us
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Listings relative to a Country.
+
+pagination
+required
+object (PaginationRequestSchema)
+Use this object to request a specific page of data.
+
+filters	
+Array of objects (CountryListingsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+currency	
+string (CurrencyISO)
+Default: "usd"
+ISO 4217 Currency Codes used for converting currency data.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+sort_order	
+string (ListingSortOrder)
+Default: "revenue"
+The attribute by which to Sort the retrieved Listings.
+
+Enum: "adr" "occupancy" "revenue" "review_count"
+Responses
+200Successfully retrieved Listings within a Country.
+Response Schema: application/json
+payload
+required
+object (CountryListingsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Explore Listings within a Market.
+If you're looking to explore listings within a Market, you can do so by general listing characteristics or metrics.
+
+Use Listing Filters to specify details for listings you want to search for.
+
+Here are some examples of the many things you can do:
+
+Sort listings by highest Occupancy, Revenue, Average Daily Rate or Review Count.
+Find listings with an average Rating of 4 or higher.
+Find listings that have a high Investability or Revenue Growth.
+Security
+headerAuth
+Request
+path Parameters
+marketId
+required
+string (MarketIdParam)
+AirDNA ID for the Market. This can often be found as market_id.
+
+Example: airdna-163
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Listings relative to a Market.
+
+pagination
+required
+object (PaginationRequestSchema)
+Use this object to request a specific page of data.
+
+filters	
+Array of objects (MarketListingsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+currency	
+string (CurrencyISO)
+Default: "usd"
+ISO 4217 Currency Codes used for converting currency data.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+sort_order	
+string (ListingSortOrder)
+Default: "revenue"
+The attribute by which to Sort the retrieved Listings.
+
+Enum: "adr" "occupancy" "revenue" "review_count"
+only_return_cover_image	
+boolean
+Default: false
+If true, only return cover images.
+
+Responses
+200Successful Market Listings Response
+Response Schema: application/json
+payload
+required
+object (CountryListingsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Explore Listings within a Submarket.
+If you're looking to explore listings within a Submarket, you can do so by general listing characteristics or metrics.
+
+Use Listing Filters to specify details for listings you want to search for.
+
+Here are some examples of the many things you can do:
+
+Sort listings by highest Occupancy, Revenue, Average Daily Rate or Review Count.
+Find listings with an average Rating of 4 or higher.
+Find listings that have a high Investability or Revenue Growth.
+Security
+headerAuth
+Request
+path Parameters
+submarketId
+required
+string (SubmarketIdParam)
+AirDNA ID for the Submarket. This can often be found as submarket_id.
+
+Example: airdna-2331
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Listings relative to a Submarket.
+
+pagination
+required
+object (PaginationRequestSchema)
+Use this object to request a specific page of data.
+
+filters	
+Array of objects (MarketListingsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+currency	
+string (CurrencyISO)
+Default: "usd"
+ISO 4217 Currency Codes used for converting currency data.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+sort_order	
+string (ListingSortOrder)
+Default: "revenue"
+The attribute by which to Sort the retrieved Listings.
+
+Enum: "adr" "occupancy" "revenue" "review_count"
+only_return_cover_image	
+boolean
+Default: false
+If true, only return cover images.
+
+Responses
+200Successful Submarket Listings Response
+Response Schema: application/json
+payload
+required
+object (CountryListingsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Explore Listings Within a Given Radius
+This endpoint will return a list of comparable listings within a radius of a given address or location.
+
+Use Listing Filters to specify details for listings you want to search for.
+
+This request will return details about the listings such as:
+
+Number of bedrooms and bathrooms
+Overall Rating
+Review Count
+Metrics such as ADR, Revenue, and Occupancy
+Amenities
+Supports Currency Conversion for non-USD currencies.
+
+By default, all currency data is in USD.
+Security
+headerAuth
+Request
+Request Body schema: application/json
+required
+Schema for performing a request to fetch comps for a location within a given area.
+
+One of:Search by AddressSearch By Coordinates
+Schema representing the base request for retrieving comps within a radius of an address or lat, lng point.
+
+address
+required
+string
+String representing an address. Can include state, country, zipcode/postal code.
+
+radius
+required
+integer > 0
+Distance in meters to search from location.
+
+pagination
+required
+object (PaginationRequestSchema)
+Use this object to request a specific page of data.
+
+filters	
+Array of objects (MarketListingsFilterListSchema)
+Array of filters that can be used to refine your search results.
+
+currency	
+string (CurrencyISO)
+Default: "usd"
+ISO 4217 Currency Codes used for converting currency data.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+sort_order	
+string
+Default: "revenue"
+The attribute by which to Sort the retrieved Listings.
+
+Enum: "adr" "proximity" "revenue" "review_count"
+sort_direction	
+string (SortDirection)
+Default: "descending"
+The direction by which to Sort the retrieved data.
+
+Enum: "ascending" "descending"
+Responses
+200Successfully retrieved Listings within a given Area.
+Response Schema: application/json
+payload
+required
+object (ListingCompsInAreaResponseSchema)
+Schema representing the response for retrieving comps within a radius of an address or lat, lng point.
+
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch details about a specific Listing.
+This endpoint returns details about a specific listing.
+
+This request will return details such as:
+
+Number of bedrooms and bathrooms
+Overall Rating
+Review Count
+Metrics such as ADR, Revenue, and Occupancy
+Amenities
+Security
+headerAuth
+Request
+path Parameters
+listingId
+required
+string (ListingIdParam)
+AirDNA ID for the Listing. This can often be found as property_id.
+
+Example: abnb_XXXXXXXX
+Responses
+200Successful Listing Details Response
+Response Schema: application/json
+payload
+required
+object (Listing)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch details about multiple Listings.
+This endpoint provides details for up to 25 Listings in a single request.
+
+This request will return details such as:
+
+Number of bedrooms and bathrooms
+Overall Rating
+Review Count
+Metrics such as ADR, Revenue, and Occupancy
+Amenities
+Supports Currency Conversion for non-USD currencies.
+
+By default, all currency data is in USD.
+Security
+headerAuth
+Request
+Request Body schema: application/json
+required
+Schema for performing a request to fetch multiple Listings.
+
+listing_ids
+required
+Array of strings (ListingIdParam) [ 1 .. 25 ]
+List of AirDNA Listing IDs to fetch. Often found as property_id.
+
+currency	
+string (CurrencyISO)
+ISO 4217 Currency Codes.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+Responses
+200Successful Listing Bulk Fetch Response
+Response Schema: application/json
+payload
+required
+object
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Historical Metrics for a specific Listing.
+This endpoint provides 12-60 months of historical monthly listing metrics for a specific Listing.
+
+This request will return metrics of:
+
+Occupancy
+Revenue
+ADR
+Supports Currency Conversion for non-USD currencies.
+
+By default, all currency data is in USD.
+Security
+headerAuth
+Request
+path Parameters
+listingId
+required
+string (ListingIdParam)
+AirDNA ID for the Listing. This can often be found as property_id.
+
+Example: abnb_XXXXXXXX
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Listing Metrics for a Listing.
+
+num_months
+required
+integer [ 12 .. 60 ]
+The number of months to request Monthly Listing data for.
+
+currency	
+string (CurrencyISO)
+Default: "usd"
+ISO 4217 Currency Codes.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+Responses
+200Successful Listing Metrics Response
+Response Schema: application/json
+payload
+required
+object
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Comps for a Listing.
+This endpoint allows you to search for a listing and returns a list of comparable listings.
+
+This request will return details for the comparable listings such as:
+
+Number of bedrooms and bathrooms
+Overall Rating
+Review Count
+Metrics such as ADR, Revenue, and Occupancy
+Amenities
+Supports Currency Conversion for non-USD currencies.
+
+By default, all currency data is in USD.
+Security
+headerAuth
+Request
+path Parameters
+listingId
+required
+string (ListingIdParam)
+AirDNA ID for the Listing. This can often be found as property_id.
+
+Example: abnb_XXXXXXXX
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Listing Comps for a Listing.
+
+pagination
+required
+object (PaginationRequestSchema)
+Use this object to request a specific page of data.
+
+currency	
+string (CurrencyISO)
+ISO 4217 Currency Codes.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+Responses
+200Successful Listing Comps Response
+Response Schema: application/json
+payload
+required
+object (ListingCompsResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Fetch Future Pricing for a Listing.
+This endpoint provides daily future pricing for a listing for up to 12 months.
+
+Supports Currency Conversion for non-USD currencies.
+By default, all currency data is in USD.
+Security
+headerAuth
+Request
+path Parameters
+listingId
+required
+string (ListingIdParam)
+AirDNA ID for the Listing. This can often be found as property_id.
+
+Example: abnb_XXXXXXXX
+Request Body schema: application/json
+required
+Schema for performing a request to fetch Future Daily Pricing for a Listing.
+
+num_months
+required
+integer [ 1 .. 12 ]
+The number of months to request Daily Listing data for.
+
+currency	
+string (CurrencyISO)
+Default: "usd"
+ISO 4217 Currency Codes.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+Responses
+200Successful Listing Future Daily Pricing Response
+Response Schema: application/json
+payload
+required
+object
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Failed to find data matching your request.
+500An internal server error occurred.
+Rentalizer Data
+Rentalizer uses AirDNA's proprietary algorithms and data to provide Performance Estimations for addresses or locations.
+
+What is Rentalizer?
+Across our Rentalizer endpoints, our performance estimates include Monthly and Yearly data. such as:
+
+Future
+Average Daily Rate
+Revenue
+Revenue Potential
+Occupancy
+Historical
+Historical Revenue Valuation
+Recommendations:
+For detailed estimates with monthly data and comps, check out our endpoint for an Individual Rentalizer Estimate
+For bulk-summary estimates with only yearly data, check out our endpoint for a Bulk Rentalizer Estimate
+Individual: Request a Detailed Performance Estimate for an Address or Location.
+You can request a detailed Rentalizer performance estimate for a property (by address) or location (by lat + lng).
+
+This detailed Rentalizer performance estimate will provide:
+
+High-level summaries for future and historical performance estimates.
+12 months of monthly future performance estimates for rates, revenue and occupancy.
+12 months of monthly historical performance estimates for annual revenue valuation.
+Up to 10 comps, each with up 12 months of monthly historical performance data for rates, revenue, revenue potential and occupancy.
+Security
+headerAuth
+Request
+Request Body schema: application/json
+required
+Schema for performing a Rentalizer Request for an address or latitude/longitude.
+
+One of:Estimate by AddressEstimate By Coordinates
+address
+required
+string
+String representing an address. Can include state, country, zipcode/postal code.
+
+bedrooms	
+integer or null
+Number of bedrooms at the requested location.
+
+bathrooms	
+number or null
+Number of bathrooms at the requested location.
+
+accommodates	
+integer or null
+Number of guests that can be accommodated at the requested location.
+
+currency	
+string (CurrencyISO)
+The currency to return the metrics in.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+Responses
+200Successful Rentalizer Estimate Response
+Response Schema: application/json
+payload
+required
+object (RentalizerEstimateResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+500An internal server error occurred.
+Bulk: Request Summarized Performance Estimates for Multiple Addresses or Locations.
+If you are looking for summarized Rentalizer performance estimates, you can request summaries for up to 25 addresses or locations in a single request.
+
+Each requested address or location will receive the following data points:
+
+Average Daily Rate (based on next 12 months)
+Total Revenue (based on next 12 months)
+Occupancy (based on next 12 months)
+Security
+headerAuth
+Request
+Request Body schema: application/json
+required
+Schema for performing bulk Rentalizer Summary Requests for multiple addresses or latitude/longitudes.
+
+queries
+required
+Array of objects [ 1 .. 25 ]
+Array 
+One of:Estimate by AddressEstimate By Coordinates
+address
+required
+string
+String representing an address. Can include state, country, zipcode/postal code.
+
+bedrooms	
+integer or null
+Number of bedrooms at the requested location.
+
+bathrooms	
+number or null
+Number of bathrooms at the requested location.
+
+accommodates	
+integer or null
+Number of guests that can be accommodated at the requested location.
+
+currency	
+string (CurrencyISO)
+The currency to return the metrics in.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+Responses
+200Successful Rentalizer Bulk Summary Response
+Response Schema: application/json
+payload
+required
+object (RentalizerBulkSummaryResponseSchema)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+500An internal server error occurred.
+Rentalizer Summary Data
+Rentalizer uses AirDNA's proprietary algorithms and data to provide Performance Estimates for addresses or locations.
+
+Request a Summarized Performance Estimate for an Address or Location.
+If you are looking for a summarized Rentalizer performance estimate, you can request a summary for an address or location.
+
+The requested address or location will receive the following data points:
+
+Average Daily Rate (based on next 12 months)
+Total Revenue (based on next 12 months)
+Occupancy (based on next 12 months)
+Security
+headerAuth
+Request
+Request Body schema: application/json
+required
+Schema for performing individual Rentalizer Summary Requests for a single address or latitude/longitude.
+
+One of:Estimate by AddressEstimate By Coordinates
+address
+required
+string
+String representing an address. Can include state, country, zipcode/postal code.
+
+bedrooms	
+integer or null
+Number of bedrooms at the requested location.
+
+bathrooms	
+number or null
+Number of bathrooms at the requested location.
+
+accommodates	
+integer or null
+Number of guests that can be accommodated at the requested location.
+
+currency	
+string (CurrencyISO)
+The currency to return the metrics in.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+Responses
+200Successful Individual Rentalizer Summary Response
+Response Schema: application/json
+payload
+required
+object (RentalizerSummaryResult)
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+500An internal server error occurred.
+Smart Rates
+The AirDNA Smart Rates API provides recommended daily rates for a specific Airbnb listing.
+
+Fetch Pricing Strategy Base Rates for an Airbnb Listing.
+Given a Listing ID, this endpoint provides the recommended Base Rate for each offered pricing strategy.
+
+Pricing Strategy	Description
+balanced	An optimized balance between ADR and Occupancy.
+high_adr	Maximize a high average daily rate.
+high_occupancy	Maximize a high occupancy rate.
+Supports Currency Conversion for non-USD currencies.
+By default, all currency data is in USD.
+Security
+headerAuth
+Request
+path Parameters
+listingId
+required
+string (ListingIdParam)
+AirDNA ID for the Listing. This can often be found as property_id.
+
+Example: abnb_XXXXXXXX
+query Parameters
+currency	
+string (CurrencyParam)
+Default: "usd"
+ISO 4217 Currency Codes.
+
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+Example: currency=usd
+Responses
+200Successfully retrieved Smart Rates Pricing Strategies.
+Response Schema: application/json
+payload
+required
+object (SmartRatesPricingStrategiesResponseSchema)
+Response Schema representing the base rates for each Pricing Strategy.
+
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Property has not been scraped in the last 30 days.
+500Unable to generate Smart Rates.
+Fetch Smart Rates for an Airbnb Listing.
+Given a Listing ID, this endpoint provides up to 12 months of recommended daily rates based on the requested pricing strategy.
+
+Supports Currency Conversion for non-USD currencies.
+By default, all currency data is in USD.
+Security
+headerAuth
+Request
+path Parameters
+listingId
+required
+string (ListingIdParam)
+AirDNA ID for the Listing. This can often be found as property_id.
+
+Example: abnb_XXXXXXXX
+Request Body schema: application/json
+required
+Request Body for fetching Smart Rates for a specific Listing.
+
+One of:Custom Pricing StrategyBalanced Rate StrategyHigh ADR StrategyHigh Occupancy Strategy
+Use this Custom pricing strategy to receive Smart Rates influenced by your custom base_rate with our seasonality and demand-based modifiers.
+
+pricing_strategy
+required
+string
+The pricing strategy to use when calculating Smart Rates.
+
+Value: "custom"
+base_rate
+required
+number >= 0
+The starting rate before seasonality and other demand-based modifiers are applied.
+
+This value must be in the requested currency for accurate results.
+num_months
+required
+integer [ 1 .. 12 ]
+The number of months to receive Smart Rates for.
+
+min_rate	
+number >= 0
+The minimum rate that can be recommended.
+
+This value must be in the requested currency for accurate results.
+max_rate	
+number >= 0
+The maximum rate that can be recommended.
+
+This value must be in the requested currency for accurate results.
+currency	
+string (CurrencyISO)
+Default: "usd"
+Currency used to configure and receive Smart Rates in.
+
+Rates sent in your request body should be in this currency.
+Enum: "aed" "afn" "all" "amd" "ang" … 164 more
+orphan_1_day_modifier	
+number [ -1 .. 1 ]
+The percentage modifier for a single Orphan day. Represented as a decimal.
+
+A positive value will apply a premium (increase).
+e.g. 0.3 = 30% premium.
+A negative value will apply a discount (decrease).
+e.g. -0.3 = 30% discount.
+orphan_2_day_modifier	
+number [ -1 .. 1 ]
+The percentage modifier for 2 sequential Orphan days. Represented as a decimal.
+
+A positive value will apply a premium (increase).
+e.g. 0.3 = 30% premium.
+A negative value will apply a discount (decrease).
+e.g. -0.3 = 30% discount.
+Responses
+200Successful Smart Rates Response
+Response Schema: application/json
+payload
+required
+object (SmartRatesResponseSchema)
+Response Schema for a Smart Rates Request.
+
+status
+required
+object (Status)
+The Status object on the response envelope
+
+400The request was invalid.
+404Property has not been scraped in the last 30 days.
+500Unable to generate Smart Rates.
