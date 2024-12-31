@@ -10,25 +10,31 @@ interface MarketMetricsParams {
   marketId: number;
 }
 
+const getAirdnaApiKey = async () => {
+  const { data: secretData, error: secretError } = await supabase
+    .from('secrets')
+    .select('value')
+    .eq('name', 'AIRDNA_API_KEY')
+    .maybeSingle();
+
+  if (secretError) {
+    console.error('Error fetching API key:', secretError);
+    throw new Error('Failed to fetch API key');
+  }
+
+  if (!secretData) {
+    throw new Error('AirDNA API key not found in secrets. Please add it to continue.');
+  }
+
+  return secretData.value;
+};
+
 export const searchMarkets = async ({ term }: MarketSearchParams) => {
   try {
-    const { data: secretData, error: secretError } = await supabase
-      .from('secrets')
-      .select('value')
-      .eq('name', 'AIRDNA_API_KEY')
-      .single();
-
-    if (secretError) {
-      console.error('Error fetching API key:', secretError);
-      throw new Error('Failed to fetch API key');
-    }
-
-    if (!secretData) {
-      throw new Error('API key not found');
-    }
+    const apiKey = await getAirdnaApiKey();
 
     const response = await fetch(
-      `${AIRDNA_BASE_URL}/market/search?access_token=${secretData.value}&term=${encodeURIComponent(term)}`
+      `${AIRDNA_BASE_URL}/market/search?access_token=${apiKey}&term=${encodeURIComponent(term)}`
     );
     
     if (!response.ok) {
@@ -46,23 +52,10 @@ export const searchMarkets = async ({ term }: MarketSearchParams) => {
 
 export const getMarketMetrics = async ({ marketId }: MarketMetricsParams) => {
   try {
-    const { data: secretData, error: secretError } = await supabase
-      .from('secrets')
-      .select('value')
-      .eq('name', 'AIRDNA_API_KEY')
-      .single();
-
-    if (secretError) {
-      console.error('Error fetching API key:', secretError);
-      throw new Error('Failed to fetch API key');
-    }
-
-    if (!secretData) {
-      throw new Error('API key not found');
-    }
+    const apiKey = await getAirdnaApiKey();
 
     const response = await fetch(
-      `${AIRDNA_BASE_URL}/market/statistics?access_token=${secretData.value}&market_id=${marketId}`
+      `${AIRDNA_BASE_URL}/market/statistics?access_token=${apiKey}&market_id=${marketId}`
     );
 
     if (!response.ok) {
