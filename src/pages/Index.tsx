@@ -2,11 +2,12 @@ import { MarketSearch } from "@/components/MarketSearch";
 import { MarketMetrics } from "@/components/MarketMetrics";
 import { PerformanceChart } from "@/components/PerformanceChart";
 import { MarketStats } from "@/components/MarketStats";
+import { Market } from "@/types/airdna";
 
 const Index = () => {
-  const handleSearch = (query: string) => {
-    console.log("Searching for:", query);
-    // TODO: Implement AirDNA API integration
+  const handleSearch = (market: Market) => {
+    console.log("Selected market:", market);
+    // TODO: Update other components with market data
   };
 
   return (

@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Create a single supabase client for interacting with your database
 const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
+  'https://xyzcompany.supabase.co',  // This will be replaced automatically by Lovable
+  'public-anon-key'  // This will be replaced automatically by Lovable
 );
 
 const AIRDNA_BASE_URL = 'https://api.airdna.co/v1';
