@@ -10,6 +10,8 @@ export default {
       colors: {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
+        border: 'var(--border)',
+        ring: 'var(--ring)',
         card: {
           DEFAULT: 'var(--card)',
           foreground: 'var(--card-foreground)',
