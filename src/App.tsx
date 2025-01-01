@@ -5,8 +5,11 @@ import { MarketChart } from '@/components/MarketChart';
 import { MarketOverview } from '@/components/MarketOverview';
 import { airdnaApi, type MarketSearchResult } from '@/services/airdna';
 import { useQuery } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-export default function App() {
+const queryClient = new QueryClient();
+
+function AppContent() {
   const [selectedMarket, setSelectedMarket] = useState<MarketSearchResult | null>(null);
 
   const { data: marketDetails, isLoading: isLoadingDetails } = useQuery({
@@ -36,11 +39,11 @@ export default function App() {
   const isLoading = isLoadingDetails || isLoadingRevpar || isLoadingOccupancy || isLoadingAdr;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-8">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-bold mb-8">STR Market Explorer</h1>
         
-        <div className="mb-8 max-w-xl">
+        <div className="w-full max-w-xl mb-8">
           <MarketSearch onMarketSelect={setSelectedMarket} />
         </div>
 
@@ -48,29 +51,45 @@ export default function App() {
           <div className="space-y-8">
             <MarketOverview
               marketName={selectedMarket.location_name}
-              listingCount={marketDetails?.listing_count || 0}
-              marketScore={marketDetails?.market_score || 0}
-              investabilityScore={marketDetails?.investability || 0}
-              regulationScore={marketDetails?.regulation || 0}
+              marketDetails={marketDetails}
               isLoading={isLoadingDetails}
             />
-
-            <MarketMetrics
-              revpar={marketDetails?.revpar || 0}
-              occupancy={marketDetails?.occupancy || 0}
-              adr={marketDetails?.adr || 0}
-              isLoading={isLoadingDetails}
-            />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <MarketMetrics
+                title="RevPAR"
+                data={revparData}
+                isLoading={isLoadingRevpar}
+              />
+              <MarketMetrics
+                title="Occupancy"
+                data={occupancyData}
+                isLoading={isLoadingOccupancy}
+              />
+              <MarketMetrics
+                title="ADR"
+                data={adrData}
+                isLoading={isLoadingAdr}
+              />
+            </div>
 
             <MarketChart
-              revparData={revparData?.metrics || []}
-              occupancyData={occupancyData?.metrics || []}
-              adrData={adrData?.metrics || []}
+              revparData={revparData}
+              occupancyData={occupancyData}
+              adrData={adrData}
               isLoading={isLoading}
             />
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+    </QueryClientProvider>
   );
 }

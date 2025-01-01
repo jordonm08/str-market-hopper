@@ -22,16 +22,24 @@ export function MarketSearch({ onMarketSelect }: MarketSearchProps) {
 
     setIsLoading(true);
     try {
-      console.log('Searching for term:', term);
+      console.log('Starting search for term:', term);
       const searchResults = await airdnaApi.searchMarkets(term);
-      console.log('Search results:', searchResults);
-      setResults(searchResults || []);
+      console.log('Raw search results:', searchResults);
+      
+      if (Array.isArray(searchResults) && searchResults.length > 0) {
+        console.log('Found', searchResults.length, 'results');
+        setResults(searchResults);
+      } else {
+        console.log('No results found for term:', term);
+        setResults([]);
+      }
     } catch (error) {
       console.error('Error searching markets:', error);
       if (axios.isAxiosError(error)) {
         console.error('API Error details:', {
           status: error.response?.status,
-          data: error.response?.data
+          data: error.response?.data,
+          headers: error.response?.headers
         });
       }
       setResults([]);
