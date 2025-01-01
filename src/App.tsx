@@ -33,7 +33,7 @@ function AppContent() {
     queryKey: ['marketMetrics', selectedMarket?.id, 'revpar'],
     queryFn: async () => {
       if (!selectedMarket?.id) throw new Error('No market selected');
-      return airdnaApi.getMarketMetrics(selectedMarket.id, 'revpar');
+      return airdnaApi.getMarketMetrics(selectedMarket.id, 'revpar', 12);
     },
     enabled: !!selectedMarket?.id,
     initialData: null,
@@ -43,7 +43,7 @@ function AppContent() {
     queryKey: ['marketMetrics', selectedMarket?.id, 'occupancy'],
     queryFn: async () => {
       if (!selectedMarket?.id) throw new Error('No market selected');
-      return airdnaApi.getMarketMetrics(selectedMarket.id, 'occupancy');
+      return airdnaApi.getMarketMetrics(selectedMarket.id, 'occupancy', 12);
     },
     enabled: !!selectedMarket?.id,
     initialData: null,
@@ -53,7 +53,7 @@ function AppContent() {
     queryKey: ['marketMetrics', selectedMarket?.id, 'adr'],
     queryFn: async () => {
       if (!selectedMarket?.id) throw new Error('No market selected');
-      return airdnaApi.getMarketMetrics(selectedMarket.id, 'adr');
+      return airdnaApi.getMarketMetrics(selectedMarket.id, 'adr', 12);
     },
     enabled: !!selectedMarket?.id,
     initialData: null,

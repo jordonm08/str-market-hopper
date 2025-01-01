@@ -84,10 +84,7 @@ export const airdnaApi = {
         }
       });
       
-      if (!response.data?.payload) {
-        throw new Error('Invalid market details response');
-      }
-
+      console.log('Market details response:', response.data);
       return response.data.payload;
     } catch (error) {
       console.error('Error fetching market details:', error);
@@ -99,7 +96,8 @@ export const airdnaApi = {
     try {
       console.log(`Fetching ${metricType} metrics for market:`, marketId);
       const response = await axios.post(`${AIRDNA_API_BASE_URL}/market/${marketId}/${metricType}`, {
-        num_months: numMonths
+        num_months: numMonths,
+        currency: 'usd'
       }, {
         headers: {
           'Authorization': `Bearer ${AIRDNA_API_KEY}`,
@@ -107,10 +105,7 @@ export const airdnaApi = {
         }
       });
 
-      if (!response.data?.payload?.metrics) {
-        throw new Error(`Invalid ${metricType} metrics response`);
-      }
-
+      console.log(`${metricType} metrics response:`, response.data);
       return response.data.payload;
     } catch (error) {
       console.error(`Error fetching ${metricType} metrics:`, error);
