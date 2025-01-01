@@ -96,13 +96,53 @@ app.get('/api/market/:marketId', async (req, res) => {
         headers: {
           'Authorization': `Bearer ${AIRDNA_API_KEY}`,
           'Content-Type': 'application/json'
+        },
+        params: {
+          num_months: 12  // Request last 12 months of data
         }
       });
 
       console.log('Submarket response successful:', {
         status: submarketResponse.status,
-        hasData: !!submarketResponse.data
+        hasData: !!submarketResponse.data,
+        metrics: submarketResponse.data?.payload?.metrics,
+        name: submarketResponse.data?.payload?.name,
+        rawMetrics: JSON.stringify(submarketResponse.data?.payload?.metrics, null, 2)
       });
+
+      // Transform the response to match our expected format
+      if (submarketResponse.data?.payload) {
+        const payload = submarketResponse.data.payload;
+        submarketResponse.data.payload = {
+          ...payload,
+          metrics: {
+            market_score: payload.metrics?.market_score || 0,
+            revenue: {
+              total: payload.metrics?.revenue?.total || 0,
+              average: payload.metrics?.revenue?.average || 0,
+              median: payload.metrics?.revenue?.median || 0
+            },
+            occupancy: {
+              rate: payload.metrics?.occupancy?.rate || 0,
+              available: payload.metrics?.occupancy?.available || 0,
+              booked: payload.metrics?.occupancy?.booked || 0
+            },
+            adr: {
+              average: payload.metrics?.adr?.average || 0,
+              median: payload.metrics?.adr?.median || 0
+            },
+            revpar: {
+              average: payload.metrics?.revpar?.average || 0
+            },
+            listings: {
+              active: payload.metrics?.listings?.active || 0,
+              total: payload.metrics?.listings?.total || 0
+            },
+            rental_demand: payload.metrics?.rental_demand || 0,
+            rental_supply: payload.metrics?.rental_supply || 0
+          }
+        };
+      }
 
       return res.json(submarketResponse.data);
     } catch (submarketError) {
@@ -119,13 +159,45 @@ app.get('/api/market/:marketId', async (req, res) => {
         headers: {
           'Authorization': `Bearer ${AIRDNA_API_KEY}`,
           'Content-Type': 'application/json'
+        },
+        params: {
+          num_months: 12  // Request last 12 months of data
         }
       });
 
-      console.log('Market response successful:', {
-        status: marketResponse.status,
-        hasData: !!marketResponse.data
-      });
+      // Transform the response to match our expected format
+      if (marketResponse.data?.payload) {
+        const payload = marketResponse.data.payload;
+        marketResponse.data.payload = {
+          ...payload,
+          metrics: {
+            market_score: payload.metrics?.market_score || 0,
+            revenue: {
+              total: payload.metrics?.revenue?.total || 0,
+              average: payload.metrics?.revenue?.average || 0,
+              median: payload.metrics?.revenue?.median || 0
+            },
+            occupancy: {
+              rate: payload.metrics?.occupancy?.rate || 0,
+              available: payload.metrics?.occupancy?.available || 0,
+              booked: payload.metrics?.occupancy?.booked || 0
+            },
+            adr: {
+              average: payload.metrics?.adr?.average || 0,
+              median: payload.metrics?.adr?.median || 0
+            },
+            revpar: {
+              average: payload.metrics?.revpar?.average || 0
+            },
+            listings: {
+              active: payload.metrics?.listings?.active || 0,
+              total: payload.metrics?.listings?.total || 0
+            },
+            rental_demand: payload.metrics?.rental_demand || 0,
+            rental_supply: payload.metrics?.rental_supply || 0
+          }
+        };
+      }
 
       return res.json(marketResponse.data);
     }

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3002/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3003/api';
 
 export interface MarketSearchResult {
   id: number;
@@ -10,10 +10,29 @@ export interface MarketSearchResult {
 
 export interface MarketMetrics {
   market_score: number;
-  revenue: number;
-  booked: number;
-  daily_rate: number;
-  revpar: number;
+  revenue: {
+    total: number;
+    average: number;
+    median: number;
+  };
+  occupancy: {
+    rate: number;
+    available: number;
+    booked: number;
+  };
+  adr: {
+    average: number;
+    median: number;
+  };
+  revpar: {
+    average: number;
+  };
+  listings: {
+    active: number;
+    total: number;
+  };
+  rental_demand: number;
+  rental_supply: number;
 }
 
 export interface MarketDetails {
