@@ -1,13 +1,34 @@
-import { supabase } from "@/integrations/supabase/client";
+import axios from 'axios';
+import { supabase } from '@/integrations/supabase/client';
 
-const AIRDNA_BASE_URL = 'https://api.airdna.co/v1';
+const AIRDNA_API_BASE_URL = 'https://api.airdna.co/api/enterprise/v2';
 
-interface MarketSearchParams {
-  term: string;
+interface MarketSearchResult {
+  id: string;
+  name: string;
+  type: string;
+  listing_count: number;
+  location_name: string;
+  location: {
+    state: string;
+    country: string;
+    country_code: string;
+  };
 }
 
-interface MarketMetricsParams {
-  marketId: number;
+interface MarketMetrics {
+  month: string;
+  value: number;
+}
+
+interface MarketDetails {
+  id: string;
+  name: string;
+  market_score: number;
+  listing_count: number;
+  occupancy: number;
+  revenue: number;
+  revpar: number;
 }
 
 const getAirdnaApiKey = async () => {
@@ -23,50 +44,50 @@ const getAirdnaApiKey = async () => {
   }
 
   if (!secretData) {
-    throw new Error('AirDNA API key not found in secrets. Please add it to continue.');
+    throw new Error('AirDNA API key not found in secrets');
   }
 
   return secretData.value;
 };
 
-export const searchMarkets = async ({ term }: MarketSearchParams) => {
-  try {
+export const airdnaApi = {
+  async searchMarkets(searchTerm: string) {
     const apiKey = await getAirdnaApiKey();
+    const response = await axios.post(`${AIRDNA_API_BASE_URL}/market/search`, {
+      search_term: searchTerm,
+      pagination: {
+        page_size: 10,
+        offset: 0
+      }
+    }, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`
+      }
+    });
+    return response.data.payload.results;
+  },
 
-    const response = await fetch(
-      `${AIRDNA_BASE_URL}/market/search?access_token=${apiKey}&term=${encodeURIComponent(term)}`
-    );
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('AirDNA API error:', errorData);
-      throw new Error('Failed to fetch market data');
-    }
+  async getMarketDetails(marketId: string) {
+    const apiKey = await getAirdnaApiKey();
+    const response = await axios.get(`${AIRDNA_API_BASE_URL}/market/${marketId}`, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`
+      }
+    });
+    return response.data.payload;
+  },
 
-    return await response.json();
-  } catch (error) {
-    console.error('Error searching markets:', error);
-    throw error;
+  async getMarketMetrics(marketId: string, metricType: 'revpar' | 'occupancy' | 'adr', numMonths: number = 12) {
+    const apiKey = await getAirdnaApiKey();
+    const response = await axios.post(`${AIRDNA_API_BASE_URL}/market/${marketId}/${metricType}`, {
+      num_months: numMonths
+    }, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`
+      }
+    });
+    return response.data.payload;
   }
 };
 
-export const getMarketMetrics = async ({ marketId }: MarketMetricsParams) => {
-  try {
-    const apiKey = await getAirdnaApiKey();
-
-    const response = await fetch(
-      `${AIRDNA_BASE_URL}/market/statistics?access_token=${apiKey}&market_id=${marketId}`
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('AirDNA API error:', errorData);
-      throw new Error('Failed to fetch market metrics');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching market metrics:', error);
-    throw error;
-  }
-};
+export type { MarketSearchResult, MarketMetrics, MarketDetails };

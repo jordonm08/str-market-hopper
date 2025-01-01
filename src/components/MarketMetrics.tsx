@@ -1,41 +1,77 @@
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DollarSign, Users, TrendingUp } from "lucide-react";
 
-interface MetricCardProps {
-  title: string;
-  value: string;
-  change?: string;
+interface MarketMetricsProps {
+  revpar: number;
+  occupancy: number;
+  adr: number;
+  isLoading?: boolean;
 }
 
-const MetricCard = ({ title, value, change }: MetricCardProps) => (
-  <Card className="p-4">
-    <h3 className="text-sm font-medium text-gray-500">{title}</h3>
-    <p className="text-2xl font-semibold mt-1">{value}</p>
-    {change && (
-      <p className={`text-sm mt-1 ${change.startsWith("+") ? "text-green-500" : "text-red-500"}`}>
-        {change}
-      </p>
-    )}
-  </Card>
-);
+export function MarketMetrics({ revpar, occupancy, adr, isLoading = false }: MarketMetricsProps) {
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
 
-export const MarketMetrics = () => {
+  const formatPercentage = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'percent',
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    }).format(value);
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <MetricCard
-        title="Average Daily Rate"
-        value="$245"
-        change="+12.5% YoY"
-      />
-      <MetricCard
-        title="Occupancy Rate"
-        value="78%"
-        change="-2.3% YoY"
-      />
-      <MetricCard
-        title="RevPAR"
-        value="$191"
-        change="+8.7% YoY"
-      />
+    <div className="grid gap-4 md:grid-cols-3">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">RevPAR</CardTitle>
+          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {isLoading ? "Loading..." : formatCurrency(revpar)}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Revenue per Available Rental
+          </p>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Occupancy Rate</CardTitle>
+          <Users className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {isLoading ? "Loading..." : formatPercentage(occupancy)}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Average Occupancy
+          </p>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">ADR</CardTitle>
+          <DollarSign className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {isLoading ? "Loading..." : formatCurrency(adr)}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Average Daily Rate
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
-};
+}

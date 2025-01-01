@@ -1,62 +1,69 @@
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { searchMarkets } from "@/services/airdna";
-import { Market } from "@/types/airdna";
-import { useToast } from "@/components/ui/use-toast";
+import { useState } from 'react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { useDebounce } from '@/hooks/useDebounce';
+import { airdnaApi, type MarketSearchResult } from '@/services/airdna';
 
 interface MarketSearchProps {
-  onSearch: (market: Market) => void;
+  onMarketSelect: (market: MarketSearchResult) => void;
 }
 
-export const MarketSearch = ({ onSearch }: MarketSearchProps) => {
-  const [query, setQuery] = useState("");
-  const { toast } = useToast();
+export function MarketSearch({ onMarketSelect }: MarketSearchProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [results, setResults] = useState<MarketSearchResult[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['markets', query],
-    queryFn: () => searchMarkets({ term: query }),
-    enabled: false,
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-
-    try {
-      await refetch();
-      if (data?.markets?.length) {
-        onSearch(data.markets[0]);
-      } else {
-        toast({
-          title: "No markets found",
-          description: "Try a different search term",
-          variant: "destructive",
-        });
-      }
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to search markets. Please try again.",
-        variant: "destructive",
-      });
+  const debouncedSearch = useDebounce(async (term: string) => {
+    if (term.length < 2) {
+      setResults([]);
+      return;
     }
+
+    setIsLoading(true);
+    try {
+      const searchResults = await airdnaApi.searchMarkets(term);
+      setResults(searchResults);
+    } catch (error) {
+      console.error('Error searching markets:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, 300);
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    debouncedSearch(value);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 w-full max-w-md">
-      <Input
-        placeholder="Search markets (e.g., Miami, FL)"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        className="flex-1"
-        disabled={isLoading}
+    <Command className="rounded-lg border shadow-md">
+      <CommandInput
+        placeholder="Search for a market..."
+        value={searchTerm}
+        onValueChange={handleSearch}
       />
-      <Button type="submit" className="bg-primary" disabled={isLoading}>
-        <Search className="h-4 w-4" />
-      </Button>
-    </form>
+      {searchTerm.length > 0 && (
+        <>
+          <CommandEmpty>
+            {isLoading ? 'Searching...' : 'No markets found.'}
+          </CommandEmpty>
+          <CommandGroup>
+            {results.map((market) => (
+              <CommandItem
+                key={market.id}
+                value={market.name}
+                onSelect={() => {
+                  onMarketSelect(market);
+                  setSearchTerm('');
+                  setIsOpen(false);
+                }}
+              >
+                <span>{market.location_name}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </>
+      )}
+    </Command>
   );
-};
+}
