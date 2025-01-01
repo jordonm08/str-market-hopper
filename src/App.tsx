@@ -46,24 +46,6 @@ function AppContent() {
               isLoading={isLoadingDetails}
             />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <MarketMetrics
-                title="RevPAR"
-                data={marketDetails}
-                isLoading={isLoadingDetails}
-              />
-              <MarketMetrics
-                title="Occupancy"
-                data={marketDetails}
-                isLoading={isLoadingDetails}
-              />
-              <MarketMetrics
-                title="ADR"
-                data={marketDetails}
-                isLoading={isLoadingDetails}
-              />
-            </div>
-
             <MarketChart
               data={marketDetails}
               isLoading={isLoadingDetails}

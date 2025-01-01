@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = 'http://localhost:3002/api';
 
 export interface MarketSearchResult {
   id: number;
@@ -9,16 +9,11 @@ export interface MarketSearchResult {
 }
 
 export interface MarketMetrics {
+  market_score: number;
   revenue: number;
-  occupancy: number;
-  adr: number;
-  revenue_available: number;
-  active_properties: number;
-  available_properties: number;
-  booked_properties: number;
-  blocked_properties: number;
-  reservation_days: number;
-  available_days: number;
+  booked: number;
+  daily_rate: number;
+  revpar: number;
 }
 
 export interface MarketDetails {
@@ -72,10 +67,11 @@ export const airdnaApi = {
     }
   },
 
-  async getMarketDetails(marketId: number): Promise<MarketDetails> {
+  async getMarketDetails(marketId: string | number): Promise<MarketDetails> {
     try {
-      console.log('Fetching market details for:', marketId);
-      const response = await axios.get(`${API_BASE_URL}/market/${marketId}`);
+      const formattedId = typeof marketId === 'number' ? `airdna-${marketId}` : marketId;
+      console.log('Fetching market details for:', formattedId);
+      const response = await axios.get(`${API_BASE_URL}/market/${formattedId}`);
       
       console.log('Market details response:', response.data);
       return response.data.payload;

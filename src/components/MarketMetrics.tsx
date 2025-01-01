@@ -15,11 +15,11 @@ export function MarketMetrics({ title, data, isLoading }: MarketMetricsProps) {
 
     switch (title) {
       case 'RevPAR':
-        return formatCurrency(data.metrics.revenue_available);
+        return formatCurrency(data.metrics.revpar);
       case 'Occupancy':
-        return formatPercentage(data.metrics.occupancy);
+        return formatPercentage(data.metrics.booked);
       case 'ADR':
-        return formatCurrency(data.metrics.adr);
+        return formatCurrency(data.metrics.daily_rate);
       default:
         return null;
     }
