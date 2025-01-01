@@ -17,8 +17,10 @@ interface MarketSearchResult {
 }
 
 interface MarketMetrics {
-  month: string;
-  value: number;
+  metrics: Array<{
+    month: string;
+    value: number;
+  }>;
 }
 
 interface MarketDetails {
@@ -26,9 +28,11 @@ interface MarketDetails {
   name: string;
   market_score: number;
   listing_count: number;
-  occupancy: number;
-  revenue: number;
-  revpar: number;
+  investability: number;
+  regulation: number;
+  rental_demand: number;
+  revenue_growth: number;
+  seasonality: number;
 }
 
 export const airdnaApi = {
@@ -53,18 +57,7 @@ export const airdnaApi = {
         return [];
       }
 
-      return response.data.payload.results.map((result: any) => ({
-        id: result.id,
-        name: result.name,
-        type: result.type,
-        listing_count: result.listing_count,
-        location_name: result.location_name,
-        location: {
-          state: result.location.state,
-          country: result.location.country,
-          country_code: result.location.country_code
-        }
-      }));
+      return response.data.payload.results;
     } catch (error) {
       console.error('AirDNA API Error:', error);
       if (axios.isAxiosError(error)) {
@@ -81,26 +74,48 @@ export const airdnaApi = {
     }
   },
 
-  async getMarketDetails(marketId: string) {
-    const response = await axios.get(`${AIRDNA_API_BASE_URL}/market/${marketId}`, {
-      headers: {
-        'Authorization': `Bearer ${AIRDNA_API_KEY}`,
-        'Content-Type': 'application/json'
+  async getMarketDetails(marketId: string): Promise<MarketDetails> {
+    try {
+      console.log('Fetching market details for:', marketId);
+      const response = await axios.get(`${AIRDNA_API_BASE_URL}/market/${marketId}`, {
+        headers: {
+          'Authorization': `Bearer ${AIRDNA_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.data?.payload) {
+        throw new Error('Invalid market details response');
       }
-    });
-    return response.data.payload;
+
+      return response.data.payload;
+    } catch (error) {
+      console.error('Error fetching market details:', error);
+      throw error;
+    }
   },
 
-  async getMarketMetrics(marketId: string, metricType: 'revpar' | 'occupancy' | 'adr', numMonths: number = 12) {
-    const response = await axios.post(`${AIRDNA_API_BASE_URL}/market/${marketId}/${metricType}`, {
-      num_months: numMonths
-    }, {
-      headers: {
-        'Authorization': `Bearer ${AIRDNA_API_KEY}`,
-        'Content-Type': 'application/json'
+  async getMarketMetrics(marketId: string, metricType: 'revpar' | 'occupancy' | 'adr', numMonths: number = 12): Promise<MarketMetrics> {
+    try {
+      console.log(`Fetching ${metricType} metrics for market:`, marketId);
+      const response = await axios.post(`${AIRDNA_API_BASE_URL}/market/${marketId}/${metricType}`, {
+        num_months: numMonths
+      }, {
+        headers: {
+          'Authorization': `Bearer ${AIRDNA_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.data?.payload?.metrics) {
+        throw new Error(`Invalid ${metricType} metrics response`);
       }
-    });
-    return response.data.payload;
+
+      return response.data.payload;
+    } catch (error) {
+      console.error(`Error fetching ${metricType} metrics:`, error);
+      throw error;
+    }
   }
 };
 

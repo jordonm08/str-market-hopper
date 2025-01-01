@@ -1,19 +1,25 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { MarketMetrics as MarketMetricsType } from "@/services/airdna";
 
 interface MarketMetricsProps {
   title: string;
-  data: {
-    metrics: Array<{ month: string; value: number }>;
-  } | null;
+  data: MarketMetricsType | null;
   isLoading: boolean;
 }
 
 export function MarketMetrics({ title, data, isLoading }: MarketMetricsProps) {
   const formatValue = (value: number) => {
-    return title === "Occupancy" ? `${Math.round(value * 100)}%` : Math.round(value).toLocaleString();
+    if (title === "Occupancy") {
+      return `${Math.round(value * 100)}%`;
+    }
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0
+    }).format(value);
   };
 
-  const currentValue = data?.metrics?.[data.metrics.length - 1]?.value || 0;
+  const currentValue = data?.metrics?.[data.metrics.length - 1]?.value ?? 0;
 
   return (
     <Card>

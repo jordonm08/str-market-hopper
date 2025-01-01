@@ -7,33 +7,56 @@ import { airdnaApi, type MarketSearchResult } from '@/services/airdna';
 import { useQuery } from '@tanstack/react-query';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function AppContent() {
   const [selectedMarket, setSelectedMarket] = useState<MarketSearchResult | null>(null);
 
   const { data: marketDetails, isLoading: isLoadingDetails } = useQuery({
     queryKey: ['marketDetails', selectedMarket?.id],
-    queryFn: () => airdnaApi.getMarketDetails(selectedMarket!.id),
-    enabled: !!selectedMarket,
+    queryFn: async () => {
+      if (!selectedMarket?.id) throw new Error('No market selected');
+      return airdnaApi.getMarketDetails(selectedMarket.id);
+    },
+    enabled: !!selectedMarket?.id,
+    initialData: null,
   });
 
   const { data: revparData, isLoading: isLoadingRevpar } = useQuery({
     queryKey: ['marketMetrics', selectedMarket?.id, 'revpar'],
-    queryFn: () => airdnaApi.getMarketMetrics(selectedMarket!.id, 'revpar'),
-    enabled: !!selectedMarket,
+    queryFn: async () => {
+      if (!selectedMarket?.id) throw new Error('No market selected');
+      return airdnaApi.getMarketMetrics(selectedMarket.id, 'revpar');
+    },
+    enabled: !!selectedMarket?.id,
+    initialData: null,
   });
 
   const { data: occupancyData, isLoading: isLoadingOccupancy } = useQuery({
     queryKey: ['marketMetrics', selectedMarket?.id, 'occupancy'],
-    queryFn: () => airdnaApi.getMarketMetrics(selectedMarket!.id, 'occupancy'),
-    enabled: !!selectedMarket,
+    queryFn: async () => {
+      if (!selectedMarket?.id) throw new Error('No market selected');
+      return airdnaApi.getMarketMetrics(selectedMarket.id, 'occupancy');
+    },
+    enabled: !!selectedMarket?.id,
+    initialData: null,
   });
 
   const { data: adrData, isLoading: isLoadingAdr } = useQuery({
     queryKey: ['marketMetrics', selectedMarket?.id, 'adr'],
-    queryFn: () => airdnaApi.getMarketMetrics(selectedMarket!.id, 'adr'),
-    enabled: !!selectedMarket,
+    queryFn: async () => {
+      if (!selectedMarket?.id) throw new Error('No market selected');
+      return airdnaApi.getMarketMetrics(selectedMarket.id, 'adr');
+    },
+    enabled: !!selectedMarket?.id,
+    initialData: null,
   });
 
   const isLoading = isLoadingDetails || isLoadingRevpar || isLoadingOccupancy || isLoadingAdr;

@@ -1,14 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building, TrendingUp, AlertTriangle, Activity } from "lucide-react";
+import type { MarketDetails } from "@/services/airdna";
 
 interface MarketOverviewProps {
   marketName: string;
-  marketDetails: {
-    listing_count: number;
-    market_score: number;
-    investability: number;
-    regulation: number;
-  } | null;
+  marketDetails: MarketDetails | null;
   isLoading?: boolean;
 }
 
