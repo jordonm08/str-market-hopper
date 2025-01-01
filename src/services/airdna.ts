@@ -97,11 +97,13 @@ export const airdnaApi = {
       console.log(`Fetching ${metricType} metrics for market:`, marketId);
       const response = await axios.post(`${AIRDNA_API_BASE_URL}/market/${marketId}/${metricType}`, {
         num_months: numMonths,
-        currency: 'usd'
+        currency: 'usd',
+        start_month: new Date().toISOString().slice(0, 7) // Format: YYYY-MM
       }, {
         headers: {
           'Authorization': `Bearer ${AIRDNA_API_KEY}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
       });
 
