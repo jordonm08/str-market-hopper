@@ -2,36 +2,35 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:3001/api';
 
-interface MarketSearchResult {
-  id: string;
-  name: string;
-  type: string;
-  listing_count: number;
+export interface MarketSearchResult {
+  id: number;
   location_name: string;
-  location: {
-    state: string;
-    country: string;
-    country_code: string;
-  };
+  type: string;
 }
 
-interface MarketMetrics {
-  metrics: Array<{
-    month: string;
-    value: number;
-  }>;
+export interface MarketMetrics {
+  revenue: number;
+  occupancy: number;
+  adr: number;
+  revenue_available: number;
+  active_properties: number;
+  available_properties: number;
+  booked_properties: number;
+  blocked_properties: number;
+  reservation_days: number;
+  available_days: number;
 }
 
-interface MarketDetails {
-  id: string;
+export interface MarketDetails {
+  id: number;
   name: string;
-  market_score: number;
-  listing_count: number;
-  investability: number;
-  regulation: number;
-  rental_demand: number;
-  revenue_growth: number;
-  seasonality: number;
+  metrics: MarketMetrics;
+  historical_metrics: {
+    month: string;
+    revenue: number;
+    occupancy: number;
+    adr: number;
+  }[];
 }
 
 export const airdnaApi = {
@@ -73,7 +72,7 @@ export const airdnaApi = {
     }
   },
 
-  async getMarketDetails(marketId: string): Promise<MarketDetails> {
+  async getMarketDetails(marketId: number): Promise<MarketDetails> {
     try {
       console.log('Fetching market details for:', marketId);
       const response = await axios.get(`${API_BASE_URL}/market/${marketId}`);
@@ -84,24 +83,5 @@ export const airdnaApi = {
       console.error('Error fetching market details:', error);
       throw error;
     }
-  },
-
-  async getMarketMetrics(marketId: string, metricType: 'revpar' | 'occupancy' | 'adr', numMonths: number = 12): Promise<MarketMetrics> {
-    try {
-      console.log(`Fetching ${metricType} metrics for market:`, marketId);
-      const response = await axios.post(`${API_BASE_URL}/market/${marketId}/${metricType}`, {
-        num_months: numMonths,
-        currency: 'usd',
-        start_month: new Date().toISOString().slice(0, 7) // Format: YYYY-MM
-      });
-
-      console.log(`${metricType} metrics response:`, response.data);
-      return response.data.payload;
-    } catch (error) {
-      console.error(`Error fetching ${metricType} metrics:`, error);
-      throw error;
-    }
   }
 };
-
-export type { MarketSearchResult, MarketMetrics, MarketDetails };

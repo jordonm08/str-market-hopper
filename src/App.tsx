@@ -29,38 +29,6 @@ function AppContent() {
     initialData: null,
   });
 
-  const { data: revparData, isLoading: isLoadingRevpar } = useQuery({
-    queryKey: ['marketMetrics', selectedMarket?.id, 'revpar'],
-    queryFn: async () => {
-      if (!selectedMarket?.id) throw new Error('No market selected');
-      return airdnaApi.getMarketMetrics(selectedMarket.id, 'revpar', 12);
-    },
-    enabled: !!selectedMarket?.id,
-    initialData: null,
-  });
-
-  const { data: occupancyData, isLoading: isLoadingOccupancy } = useQuery({
-    queryKey: ['marketMetrics', selectedMarket?.id, 'occupancy'],
-    queryFn: async () => {
-      if (!selectedMarket?.id) throw new Error('No market selected');
-      return airdnaApi.getMarketMetrics(selectedMarket.id, 'occupancy', 12);
-    },
-    enabled: !!selectedMarket?.id,
-    initialData: null,
-  });
-
-  const { data: adrData, isLoading: isLoadingAdr } = useQuery({
-    queryKey: ['marketMetrics', selectedMarket?.id, 'adr'],
-    queryFn: async () => {
-      if (!selectedMarket?.id) throw new Error('No market selected');
-      return airdnaApi.getMarketMetrics(selectedMarket.id, 'adr', 12);
-    },
-    enabled: !!selectedMarket?.id,
-    initialData: null,
-  });
-
-  const isLoading = isLoadingDetails || isLoadingRevpar || isLoadingOccupancy || isLoadingAdr;
-
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto">
@@ -81,26 +49,24 @@ function AppContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <MarketMetrics
                 title="RevPAR"
-                data={revparData}
-                isLoading={isLoadingRevpar}
+                data={marketDetails}
+                isLoading={isLoadingDetails}
               />
               <MarketMetrics
                 title="Occupancy"
-                data={occupancyData}
-                isLoading={isLoadingOccupancy}
+                data={marketDetails}
+                isLoading={isLoadingDetails}
               />
               <MarketMetrics
                 title="ADR"
-                data={adrData}
-                isLoading={isLoadingAdr}
+                data={marketDetails}
+                isLoading={isLoadingDetails}
               />
             </div>
 
             <MarketChart
-              revparData={revparData}
-              occupancyData={occupancyData}
-              adrData={adrData}
-              isLoading={isLoading}
+              data={marketDetails}
+              isLoading={isLoadingDetails}
             />
           </div>
         )}

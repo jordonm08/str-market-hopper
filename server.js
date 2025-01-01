@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 dotenv.config();
 
 const app = express();
-const port = 3001;
+const port = 3002;
 
 app.use(cors());
 app.use(express.json());
@@ -72,36 +72,10 @@ app.get('/api/market/:marketId', async (req, res) => {
         'Content-Type': 'application/json'
       }
     });
+    console.log('Market details response:', response.data);
     res.json(response.data);
   } catch (error) {
     console.error('Error proxying market details:', error);
-    if (error.response) {
-      console.error('AirDNA API error response:', {
-        status: error.response.status,
-        data: error.response.data
-      });
-    }
-    res.status(error.response?.status || 500).json({ error: error.message, details: error.response?.data });
-  }
-});
-
-// Proxy endpoint for market metrics
-app.post('/api/market/:marketId/:metricType', async (req, res) => {
-  try {
-    console.log(`Proxying ${req.params.metricType} metrics request for:`, req.params.marketId);
-    const response = await axios.post(
-      `${AIRDNA_API_BASE_URL}/market/${req.params.marketId}/${req.params.metricType}`,
-      req.body,
-      {
-        headers: {
-          'Authorization': `Bearer ${AIRDNA_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    res.json(response.data);
-  } catch (error) {
-    console.error(`Error proxying ${req.params.metricType} metrics:`, error);
     if (error.response) {
       console.error('AirDNA API error response:', {
         status: error.response.status,

@@ -9,7 +9,6 @@ interface MarketSearchProps {
 }
 
 export function MarketSearch({ onMarketSelect }: MarketSearchProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState<MarketSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -69,14 +68,13 @@ export function MarketSearch({ onMarketSelect }: MarketSearchProps) {
             {results.map((market) => (
               <CommandItem
                 key={market.id}
-                value={market.name}
+                value={market.location_name}
                 onSelect={() => {
                   onMarketSelect(market);
                   setSearchTerm('');
-                  setIsOpen(false);
                 }}
               >
-                <span>{market.location_name} ({market.listing_count.toLocaleString()} listings)</span>
+                <span>{market.location_name}</span>
               </CommandItem>
             ))}
           </CommandGroup>
