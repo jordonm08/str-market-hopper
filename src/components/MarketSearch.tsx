@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { useDebounce } from '@/hooks/useDebounce';
 import { airdnaApi, type MarketSearchResult } from '@/services/airdna';
+import axios from 'axios';
 
 interface MarketSearchProps {
   onMarketSelect: (market: MarketSearchResult) => void;
@@ -21,10 +22,19 @@ export function MarketSearch({ onMarketSelect }: MarketSearchProps) {
 
     setIsLoading(true);
     try {
+      console.log('Searching for term:', term);
       const searchResults = await airdnaApi.searchMarkets(term);
-      setResults(searchResults);
+      console.log('Search results:', searchResults);
+      setResults(searchResults || []);
     } catch (error) {
       console.error('Error searching markets:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('API Error details:', {
+          status: error.response?.status,
+          data: error.response?.data
+        });
+      }
+      setResults([]);
     } finally {
       setIsLoading(false);
     }

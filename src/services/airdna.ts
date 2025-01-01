@@ -52,19 +52,41 @@ const getAirdnaApiKey = async () => {
 
 export const airdnaApi = {
   async searchMarkets(searchTerm: string) {
-    const apiKey = await getAirdnaApiKey();
-    const response = await axios.post(`${AIRDNA_API_BASE_URL}/market/search`, {
-      search_term: searchTerm,
-      pagination: {
-        page_size: 10,
-        offset: 0
+    try {
+      const apiKey = await getAirdnaApiKey();
+      console.log('Making AirDNA API request for term:', searchTerm);
+      const response = await axios.post(`${AIRDNA_API_BASE_URL}/market/search`, {
+        search_term: searchTerm,
+        pagination: {
+          page_size: 10,
+          offset: 0
+        }
+      }, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        }
+      });
+
+      if (!response.data?.payload?.results) {
+        console.error('Unexpected API response format:', response.data);
+        return [];
       }
-    }, {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`
+
+      return response.data.payload.results;
+    } catch (error) {
+      console.error('AirDNA API Error:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('AirDNA API Error Details:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          config: {
+            url: error.config?.url,
+            method: error.config?.method,
+          }
+        });
       }
-    });
-    return response.data.payload.results;
+      throw error;
+    }
   },
 
   async getMarketDetails(marketId: string) {
