@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-const AIRDNA_API_BASE_URL = 'https://api.airdna.co/api/enterprise/v2';
-const AIRDNA_API_KEY = import.meta.env.VITE_AIRDNA_API_KEY;
+const API_BASE_URL = 'http://localhost:3001/api';
 
 interface MarketSearchResult {
   id: string;
@@ -39,16 +38,11 @@ export const airdnaApi = {
   async searchMarkets(searchTerm: string) {
     try {
       console.log('Making AirDNA API request for term:', searchTerm);
-      const response = await axios.post(`${AIRDNA_API_BASE_URL}/market/search`, {
+      const response = await axios.post(`${API_BASE_URL}/market/search`, {
         search_term: searchTerm,
         pagination: {
           page_size: 10,
           offset: 0
-        }
-      }, {
-        headers: {
-          'Authorization': `Bearer ${AIRDNA_API_KEY}`,
-          'Content-Type': 'application/json'
         }
       });
 
@@ -77,12 +71,7 @@ export const airdnaApi = {
   async getMarketDetails(marketId: string): Promise<MarketDetails> {
     try {
       console.log('Fetching market details for:', marketId);
-      const response = await axios.get(`${AIRDNA_API_BASE_URL}/market/${marketId}`, {
-        headers: {
-          'Authorization': `Bearer ${AIRDNA_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await axios.get(`${API_BASE_URL}/market/${marketId}`);
       
       console.log('Market details response:', response.data);
       return response.data.payload;
@@ -95,16 +84,10 @@ export const airdnaApi = {
   async getMarketMetrics(marketId: string, metricType: 'revpar' | 'occupancy' | 'adr', numMonths: number = 12): Promise<MarketMetrics> {
     try {
       console.log(`Fetching ${metricType} metrics for market:`, marketId);
-      const response = await axios.post(`${AIRDNA_API_BASE_URL}/market/${marketId}/${metricType}`, {
+      const response = await axios.post(`${API_BASE_URL}/market/${marketId}/${metricType}`, {
         num_months: numMonths,
         currency: 'usd',
         start_month: new Date().toISOString().slice(0, 7) // Format: YYYY-MM
-      }, {
-        headers: {
-          'Authorization': `Bearer ${AIRDNA_API_KEY}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
       });
 
       console.log(`${metricType} metrics response:`, response.data);
