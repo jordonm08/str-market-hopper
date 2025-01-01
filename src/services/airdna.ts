@@ -46,12 +46,16 @@ export const airdnaApi = {
         }
       });
 
+      console.log('Raw search response:', response.data);
+
       if (!response.data?.payload?.results) {
         console.error('Unexpected API response format:', response.data);
         return [];
       }
 
-      return response.data.payload.results;
+      const results = response.data.payload.results;
+      console.log('Found', results.length, 'results:', results);
+      return results;
     } catch (error) {
       console.error('AirDNA API Error:', error);
       if (axios.isAxiosError(error)) {
@@ -61,6 +65,7 @@ export const airdnaApi = {
           config: {
             url: error.config?.url,
             method: error.config?.method,
+            data: error.config?.data
           }
         });
       }
@@ -98,43 +103,5 @@ export const airdnaApi = {
     }
   }
 };
-
-// Add a global test function for debugging
-if (typeof window !== 'undefined') {
-  (window as any).testAirdnaApi = async () => {
-    try {
-      console.log('API Key available:', !!AIRDNA_API_KEY);
-      
-      // Test the API key with a simple search
-      console.log('Testing API key permissions...');
-      const response = await axios.post(`${AIRDNA_API_BASE_URL}/market/search`, {
-        search_term: "test",
-        pagination: {
-          page_size: 1,
-          offset: 0
-        }
-      }, {
-        headers: {
-          'Authorization': `Bearer ${AIRDNA_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      console.log('API test response status:', response.status);
-      console.log('API permissions working:', !!response.data?.payload);
-      console.log('Response data:', response.data);
-      return true;
-    } catch (error) {
-      console.error('Error testing API key:', error);
-      if (axios.isAxiosError(error)) {
-        console.error('API Error Details:', {
-          status: error.response?.status,
-          data: error.response?.data
-        });
-      }
-      return false;
-    }
-  };
-}
 
 export type { MarketSearchResult, MarketMetrics, MarketDetails };
