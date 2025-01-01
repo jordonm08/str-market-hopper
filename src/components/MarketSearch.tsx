@@ -68,7 +68,7 @@ export function MarketSearch({ onMarketSelect }: MarketSearchProps) {
                   setIsOpen(false);
                 }}
               >
-                <span>{market.location_name}</span>
+                <span>{market.location_name} ({market.listing_count.toLocaleString()} listings)</span>
               </CommandItem>
             ))}
           </CommandGroup>

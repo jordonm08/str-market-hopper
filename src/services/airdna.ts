@@ -51,6 +51,41 @@ const getAirdnaApiKey = async () => {
 };
 
 export const airdnaApi = {
+  async testApiKey() {
+    try {
+      const apiKey = await getAirdnaApiKey();
+      console.log('API Key found:', apiKey ? 'Yes (first 4 chars: ' + apiKey.substring(0, 4) + '...)' : 'No');
+      
+      // Test the API key with a simple search
+      console.log('Testing API key permissions...');
+      const response = await axios.post(`${AIRDNA_API_BASE_URL}/market/search`, {
+        search_term: "test",
+        pagination: {
+          page_size: 1,
+          offset: 0
+        }
+      }, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('API test response status:', response.status);
+      console.log('API permissions working:', !!response.data?.payload);
+      return true;
+    } catch (error) {
+      console.error('Error testing API key:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('API Error Details:', {
+          status: error.response?.status,
+          data: error.response?.data
+        });
+      }
+      return false;
+    }
+  },
+
   async searchMarkets(searchTerm: string) {
     try {
       const apiKey = await getAirdnaApiKey();
@@ -63,7 +98,8 @@ export const airdnaApi = {
         }
       }, {
         headers: {
-          'Authorization': `Bearer ${apiKey}`
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
         }
       });
 
@@ -72,7 +108,18 @@ export const airdnaApi = {
         return [];
       }
 
-      return response.data.payload.results;
+      return response.data.payload.results.map((result: any) => ({
+        id: result.id,
+        name: result.name,
+        type: result.type,
+        listing_count: result.listing_count,
+        location_name: result.location_name,
+        location: {
+          state: result.location.state,
+          country: result.location.country,
+          country_code: result.location.country_code
+        }
+      }));
     } catch (error) {
       console.error('AirDNA API Error:', error);
       if (axios.isAxiosError(error)) {
@@ -111,5 +158,44 @@ export const airdnaApi = {
     return response.data.payload;
   }
 };
+
+// Add a global test function for debugging
+if (typeof window !== 'undefined') {
+  (window as any).testAirdnaApi = async () => {
+    try {
+      const apiKey = await getAirdnaApiKey();
+      console.log('API Key found:', apiKey ? 'Yes (first 4 chars: ' + apiKey.substring(0, 4) + '...)' : 'No');
+      
+      // Test the API key with a simple search
+      console.log('Testing API key permissions...');
+      const response = await axios.post(`${AIRDNA_API_BASE_URL}/market/search`, {
+        search_term: "test",
+        pagination: {
+          page_size: 1,
+          offset: 0
+        }
+      }, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('API test response status:', response.status);
+      console.log('API permissions working:', !!response.data?.payload);
+      console.log('Response data:', response.data);
+      return true;
+    } catch (error) {
+      console.error('Error testing API key:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('API Error Details:', {
+          status: error.response?.status,
+          data: error.response?.data
+        });
+      }
+      return false;
+    }
+  };
+}
 
 export type { MarketSearchResult, MarketMetrics, MarketDetails };
